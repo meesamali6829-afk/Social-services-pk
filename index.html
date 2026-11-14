@@ -450,6 +450,15 @@ async function hashPw(pw,salt){
 const users=()=>LS.get('ssp_users',{});
 const currentUser=()=>{const e=LS.get('ssp_session',null);return e?users()[e]||null:null};
 let ME=null;
+/* server auth: returns {status,j} or {down:true} when the account server is unreachable / not set up */
+async function authSrv(body,token){
+ try{const r=await fetch('/api/auth',{method:'POST',headers:Object.assign({'Content-Type':'application/json'},token?{Authorization:'Bearer '+token}:{}),body:JSON.stringify(body),cache:'no-store'});
+  let j=null;try{j=await r.json()}catch(e){}
+  if(!j||r.status===404||r.status===503||r.status===405)return {down:true};
+  return {status:r.status,j}}catch(e){return {down:true}}}
+const setTok=t=>{try{localStorage.setItem('ssp_token',t)}catch(e){}};
+const getTok=()=>{try{return localStorage.getItem('ssp_token')||''}catch(e){return ''}};
+const clrTok=()=>{try{localStorage.removeItem('ssp_token')}catch(e){}};
 
 function authView(mode){
  const su=mode==='signup';ME=null;
@@ -477,6 +486,25 @@ function authView(mode){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return msg('Please enter a valid email address.');
   $('#sb').disabled=true;
   try{
+  {const name0=su?$('#nm').value.trim().replace(/\s+/g,' '):'';
+   if(su){
+    if(name0.length<2)return msg('Please enter your full name.');
+    if(pw.length<8||!/[A-Za-z]/.test(pw)||!/\d/.test(pw))return msg('Password must be at least 8 characters and include letters and numbers.');
+    if(pw!==$('#pc').value)return msg('Passwords do not match.');
+   }
+   let sv=await authSrv(su?{action:'signup',name:name0,email,password:pw}:{action:'login',email,password:pw});
+   if(!sv.down&&!su&&sv.status===401){
+    /* one-time migration: account created earlier on this device only */
+    const lu=all[email];
+    if(lu&&await hashPw(pw,lu.salt)===lu.hash){const m=await authSrv({action:'signup',name:lu.name,email,password:pw});if(!m.down&&m.j.ok)sv=m}
+   }
+   if(!sv.down){
+    if(sv.j&&sv.j.ok){setTok(sv.j.token);try{localStorage.removeItem('ssp_session')}catch(e){}ME=sv.j.user;site();window.scrollTo(0,0);
+     toast(su?'Account created. Welcome, '+ME.name.split(' ')[0]+'.':'Welcome back, '+ME.name.split(' ')[0]+'.','success');return}
+    return msg((sv.j&&sv.j.message)||'Something went wrong. Please try again.');
+   }
+  }
+  /* fallback only when the account server is not reachable: device-only accounts */
   if(su){
    const name=$('#nm').value.trim().replace(/\s+/g,' ');
    if(name.length<2)return msg('Please enter your full name.');
@@ -495,7 +523,7 @@ function authView(mode){
   }}catch(e){console.error(e);msg('Something went wrong. Please refresh the page and try again.')}finally{const b=$('#sb');if(b)b.disabled=false}
  };
 }
-function logout(){try{localStorage.removeItem('ssp_session')}catch(e){}authView('login');toast('You have been logged out.')}
+function logout(){const t=getTok();clrTok();try{localStorage.removeItem('ssp_session')}catch(e){}if(t)authSrv({action:'logout'},t);authView('login');toast('You have been logged out.')}
 
 function initReport(){
  const f=$('#rf');if(!f||!ME)return;initSelect();
@@ -514,7 +542,14 @@ function initReport(){
    setTimeout(()=>ui({title:'Report '+id+' ready',text:'WhatsApp has opened with your details. Press Send there to deliver your report.',icon:'success',cancel:null,ok:'Done'}),300)}})
  };
 }
-function boot2(){ME=currentUser();if(ME)site();else authView('signup')}
+async function boot2(){
+ const t=getTok();
+ if(t){const r=await authSrv({action:'me'},t);
+  if(!r.down){if(r.j&&r.j.ok){ME=r.j.user;return site()}clrTok()}
+  else{ME=currentUser();if(ME)return site()}}
+ else{const r=await authSrv({action:'ping'});
+  if(r.down){ME=currentUser();if(ME)return site()}}
+ authView(Object.keys(users()).length&&!t?'login':'signup')}
 /* product image resolver: accepts data URL, http(s) URL, /path, raw base64, or alternate field names */
 function pimg(p){let v=p.image||p.img||p.photo||p.picture||p.image_url||p.imageUrl||'';if(Array.isArray(v))v=v[0]||'';v=String(v||'').trim();if(!v)return '';
  if(/^(data:|https?:|\/|blob:)/i.test(v))return v;
