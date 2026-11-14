@@ -70,25 +70,28 @@ module.exports = async (req, res) => {
       const email = clean(q.email, 120).toLowerCase();
       if (!email) return send(400, { error: 'Email required' });
       const mine = (await all()).filter(o => o.email === email).sort((a, b) => b.t - a.t)
-        .map(o => ({ id: o.id, product: o.product, price: o.price, duration: o.duration, status: o.status, t: o.t }));
+        .map(o => ({ id: o.id, product: o.product, price: o.price, duration: o.duration, actEmail: o.actEmail, status: o.status, t: o.t }));
       return send(200, { orders: mine });
     }
 
     if (req.method === 'POST' && body.action === 'create') {
       const o = body.order || {};
       const email = clean(o.email, 120).toLowerCase();
+      const actEmail = clean(o.activation_email, 120).toLowerCase();
       const wa = clean(o.whatsapp, 20).replace(/\D/g, '');
       const txid = clean(o.txid, 40);
       const rec = {
         id: 'SSP-' + Date.now().toString(36).toUpperCase().slice(-5) + crypto.randomBytes(2).toString('hex').toUpperCase(),
         product: clean(o.product, 80), duration: clean(o.duration, 40), price: Number(o.price) || 0,
-        name: clean(o.name, 80), email, whatsapp: wa, method: clean(o.method, 30), txid,
+        name: clean(o.name, 80), email, actEmail, whatsapp: wa, method: clean(o.method, 30), txid,
         status: 'waiting', t: Date.now()
       };
       const shot = String(o.screenshot || '');
       if (!rec.product) return send(400, { error: 'Product missing.' });
       if (rec.name.length < 2) return send(400, { error: 'Please enter your name.' });
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) return send(400, { error: 'Please enter a valid email.' });
+      if (!actEmail) return send(400, { error: 'Please enter the email address on which the plan should be activated.' });
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(actEmail)) return send(400, { error: 'The activation email address is not valid.' });
       if (wa.length < 10 || wa.length > 15) return send(400, { error: 'Please enter a valid WhatsApp number.' });
       if (!METHODS.includes(rec.method)) return send(400, { error: 'Please select the payment method you used.' });
       if (txid.length < 6) return send(400, { error: 'Please enter a valid Transaction ID.' });
