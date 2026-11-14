@@ -221,6 +221,10 @@ footer .soc a.wc:hover,footer .soc a.wm:hover{background:#1f9d57}
 @media(max-width:600px){footer .soc a{flex:1 1 calc(50% - 10px);justify-content:center}}
 
 .card .im{position:relative}.card .im img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.cred{margin-top:14px;border:1px solid rgba(59,130,246,.45);background:rgba(59,130,246,.08);border-radius:10px;padding:14px 16px}
+.credh{font:600 11.5px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin-bottom:2px}
+.cred .pyrow{flex-wrap:wrap;row-gap:4px;margin-top:12px}.cred .pyrow small{width:100%!important}.cred .pyrow code{letter-spacing:.02em;flex:1 1 0;min-width:0}.cred .pyrow .cp+.cp{margin-left:-4px}
+.od .credn{margin:10px 0 0;font-size:13px;color:var(--mut)}
 /* ===== PAYMENT + ORDERS ===== */
 .mc.pay{max-width:600px;text-align:left;max-height:92vh;max-height:92dvh;overflow:auto;padding:30px 26px 24px}
 .mc.pay h3{font-size:26px;padding-right:36px}.mc.pay>p{margin:6px 0 0}
@@ -493,6 +497,13 @@ async function oapi(method,o){o=o||{};
 function copyTxt(t,b){const done=()=>{const o=b.textContent;b.textContent='Copied';setTimeout(()=>{b.textContent=o},1400)};
  const fb=()=>{const x=document.createElement('textarea');x.value=t;x.style.cssText='position:fixed;opacity:0';document.body.appendChild(x);x.select();try{document.execCommand('copy');done()}catch(e){}x.remove()};
  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+function getSecret(){const k='ssp_sec_'+ME.email;let v=LS.get(k,'');if(!v||String(v).length<16){v=rnd()+rnd();LS.set(k,v)}return v}
+function credBox(o){
+ if(o.acct)return `<div class="cred"><div class="credh">Your account details</div>
+  <div class="pyrow"><small>Email</small><code>${esc(o.acct.email)}</code><button type="button" class="cp" data-c="${esc(o.acct.email)}">Copy</button></div>
+  <div class="pyrow"><small>Password</small><code class="pwv" data-p="${esc(o.acct.password)}">\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022</code><button type="button" class="cp" data-sp="1">Show</button><button type="button" class="cp" data-c="${esc(o.acct.password)}">Copy</button></div>
+  ${o.acct.note?`<p class="credn">${esc(o.acct.note)}</p>`:''}<p class="credn">Please keep these details private and do not share them with anyone.</p></div>`;
+ return o.locked?'<p class="credn">For your security, the account details are only shown on the device and browser you placed this order from.</p>':''}
 function sheet(cls,html){closeUi();const d=document.createElement('div');d.className='md';d.id='md';
  d.innerHTML=`<div class="mc ${cls}" role="dialog" aria-modal="true">${html}</div>`;
  d.onclick=e=>{if(e.target===d||(e.target.dataset&&e.target.dataset.x==='c'))closeUi()};
@@ -529,7 +540,7 @@ function payModal(p){
   if(!file)return msg('Please upload your payment screenshot.');
   const b=$('#osb');b.disabled=true;b.textContent='Submitting...';
   try{const shot=await shrink(file,1000,380000);
-   await oapi('POST',{body:{action:'create',order:{product:p.name,duration:p.duration||'',price:p.price,name,email,activation_email:act,whatsapp:wa,method:$('#om2').value,txid:tx,screenshot:shot}}});
+   await oapi('POST',{body:{action:'create',order:{product:p.name,duration:p.duration||'',price:p.price,account:ME.email,secret:getSecret(),name,email,activation_email:act,whatsapp:wa,method:$('#om2').value,txid:tx,screenshot:shot}}});
    LS.set('ssp_wa_'+ME.email,$('#ow').value.trim());closeUi();
    ui({title:'Payment submitted',text:'Your order is now waiting for approval. Once our team confirms your payment, its status under My Orders changes to Active automatically.',icon:'success',cancel:null,ok:'View my orders',onOk:()=>{loadMyOrders();const o=$('#orders');o&&o.scrollIntoView()}});
    loadMyOrders(true)
@@ -537,14 +548,16 @@ function payModal(p){
 let ordT=null,ordPrev={};
 function initOrders(){loadMyOrders();clearInterval(ordT);ordT=setInterval(()=>{if($('#ol')&&ME)loadMyOrders(true);else clearInterval(ordT)},20000)}
 async function loadMyOrders(quiet){const box=$('#ol');if(!box||!ME)return;
- try{const j=await oapi('GET',{q:'?email='+encodeURIComponent(ME.email)});const list=j.orders||[];
-  list.forEach(o=>{if(ordPrev[o.id]&&ordPrev[o.id]!==o.status&&o.status==='active')toast('Your '+o.product+' plan is now active.','success');ordPrev[o.id]=o.status});
+ try{const j=await oapi('POST',{body:{action:'mine',email:ME.email,secret:getSecret()}});const list=j.orders||[];
+  list.forEach(o=>{if(ordPrev[o.id]&&ordPrev[o.id]!==o.status&&o.status==='active')toast('Your '+o.product+' plan is now active.'+(o.acct?' Your account details are ready.':''),'success');ordPrev[o.id]=o.status});
   const b2=$('#ol');if(!b2)return;
   b2.innerHTML=list.length?list.map(o=>{const s=ST[o.status]||ST.waiting;
    return `<div class="od"><div class="odh"><b>${esc(o.product)}</b><span class="stt ${s[1]}">${s[0]}</span></div>
    <div class="odm">${money(o.price)}${o.duration?' \u00b7 '+esc(o.duration):''} \u00b7 ${fdate(o.t)} \u00b7 ${esc(o.id)}</div>
-   ${o.actEmail?`<div class="odm">Plan email: ${esc(o.actEmail)}</div>`:''}<p>${o.status==='active'?'Your plan is active. Thank you for choosing us.':o.status==='rejected'?'We could not verify this payment. Please contact us on WhatsApp.':'Waiting for our team to verify your payment.'}</p></div>`}).join('')
+   ${o.actEmail?`<div class="odm">Plan email: ${esc(o.actEmail)}</div>`:''}<p>${o.status==='active'?'Your plan is active. Thank you for choosing us.':o.status==='rejected'?'We could not verify this payment. Please contact us on WhatsApp.':'Waiting for our team to verify your payment.'}</p>${o.status==='active'?credBox(o):''}</div>`}).join('')
   :'<div class="od"><div class="odm" style="margin:0;text-align:center">You have no orders yet. Choose a service above and press Buy Now to get started.</div></div>'
+ b2.querySelectorAll('.cp[data-c]').forEach(x=>x.onclick=()=>copyTxt(x.dataset.c,x));
+ b2.querySelectorAll('[data-sp]').forEach(x=>x.onclick=()=>{const c=x.closest('.pyrow').querySelector('.pwv'),sh=x.textContent==='Show';c.textContent=sh?c.dataset.p:'\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022';x.textContent=sh?'Hide':'Show'})
  }catch(e){if(!quiet)box.innerHTML='<div class="od"><div class="odm" style="margin:0">Your orders could not be loaded right now. Please try again shortly.</div></div>'}}
 /* ===== ADMIN PANEL (owner only, open with  yoursite/#admin) ===== */
 let inAdmin=false,ADM='';
@@ -612,6 +625,21 @@ function adminPanel(){
   }catch(e){toast(apiErr(e),'error')}finally{b.disabled=false}};
  draw();adminOrders()}
 
+function approveForm(o){const ac=o.acct||{};
+ sheet('pay',`<button class="x" data-x="c" type="button" aria-label="Close">&times;</button><h3>${o.status==='active'?'Edit account details':'Approve order'}</h3>
+ <p>Enter the subscription account details below. The customer will see them in My Orders as soon as you approve.</p>
+ <div class="mdt"><div><b>Plan</b><span>${esc(o.product)}</span></div><div><b>Customer</b><span>${esc(o.name)}</span></div><div><b>Activate on</b><span><strong>${esc(o.actEmail||o.email)}</strong></span></div><div><b>Txn ID</b><span>${esc(o.txid)}</span></div></div>
+ <form id="apf" novalidate style="margin-top:18px"><div class="msg" id="apm"></div>
+ <div class="f"><label for="ae">Account email / username *</label><input id="ae" maxlength="120" autocomplete="off" value="${esc(ac.email||'')}"></div>
+ <div class="f"><label for="ax">Account password *</label><input id="ax" maxlength="120" autocomplete="off" value="${esc(ac.password||'')}"></div>
+ <div class="f"><label for="an">Note (optional)</label><textarea id="an" maxlength="300" style="min-height:80px" placeholder="e.g. Profile name, PIN, login instructions">${esc(ac.note||'')}</textarea></div>
+ <button class="btn gold" type="submit" id="apb">${o.status==='active'?'Save changes':'Approve and send details'}</button></form>`);
+ $('#apf').onsubmit=async ev=>{ev.preventDefault();const em=$('#ae').value.trim(),pw=$('#ax').value.trim(),m=$('#apm');
+  if(!em||!pw){m.className='msg err';m.textContent='Account email and password are required before you can approve.';return}
+  const bt=$('#apb');bt.disabled=true;
+  try{await oapi('POST',{admin:1,body:{action:'status',id:o.id,status:'active',account:{email:em,password:pw,note:$('#an').value.trim()}}});
+   closeUi();await refreshAO(true);toast(o.status==='active'?'Account details updated.':'Order approved. The customer can now see the account details.','success')}
+  catch(e){bt.disabled=false;m.className='msg err';m.textContent=apiErr(e)}}}
 let aF='waiting',aO=[],aT=null;
 function adminOrders(){
  document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tb').forEach(x=>x.classList.toggle('on',x===b));$('#to').style.display=b.dataset.t==='o'?'block':'none';$('#tp').style.display=b.dataset.t==='p'?'grid':'none'});
@@ -625,17 +653,17 @@ function drawAO(){if(!$('#oal'))return;
  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{aF=b.dataset.f;drawAO()});
  const list=aO.filter(o=>aF==='all'||o.status===aF).sort((a,b)=>b.t-a.t);
  $('#oal').innerHTML=list.length?list.map(o=>{const s=ST[o.status]||ST.waiting;
-  const acts=(o.status!=='active'?`<button class="btn gold sm" data-a="active" data-id="${esc(o.id)}">Approve</button>`:'')+(o.status==='waiting'?`<button class="btn out sm" data-a="rejected" data-id="${esc(o.id)}">Reject</button>`:'')+(o.status!=='waiting'?`<button class="btn out sm" data-a="waiting" data-id="${esc(o.id)}">Move to waiting</button>`:'')+`<button class="btn out sm" data-a="del" data-id="${esc(o.id)}">Delete</button>`;
+  const acts=`<button class="btn gold sm" data-a="active" data-id="${esc(o.id)}">${o.status==='active'?'Edit account details':'Approve'}</button>`+(o.status==='waiting'?`<button class="btn out sm" data-a="rejected" data-id="${esc(o.id)}">Reject</button>`:'')+(o.status!=='waiting'?`<button class="btn out sm" data-a="waiting" data-id="${esc(o.id)}">Move to waiting</button>`:'')+`<button class="btn out sm" data-a="del" data-id="${esc(o.id)}">Delete</button>`;
   return `<div class="ao"><div class="aoh"><b>${esc(o.product)}</b><span class="stt ${s[1]}">${s[0]}</span></div>
   <div class="aom">${money(o.price)}${o.duration?' \u00b7 '+esc(o.duration):''} \u00b7 ${fdate(o.t)} \u00b7 ${esc(o.id)}</div>
-  <div class="mdt"><div><b>Name</b><span>${esc(o.name)}</span></div><div><b>Email</b><span>${esc(o.email)}</span></div><div><b>Activate on</b><span><strong>${esc(o.actEmail||o.email)}</strong></span></div><div><b>WhatsApp</b><span><a target="_blank" rel="noopener" href="https://wa.me/${esc(o.whatsapp)}">${esc(o.whatsapp)}</a></span></div><div><b>Paid via</b><span>${esc(o.method)}</span></div><div><b>Txn ID</b><span>${esc(o.txid)}</span></div></div>
+  <div class="mdt"><div><b>Name</b><span>${esc(o.name)}</span></div><div><b>Email</b><span>${esc(o.email)}</span></div><div><b>Activate on</b><span><strong>${esc(o.actEmail||o.email)}</strong></span></div><div><b>WhatsApp</b><span><a target="_blank" rel="noopener" href="https://wa.me/${esc(o.whatsapp)}">${esc(o.whatsapp)}</a></span></div><div><b>Paid via</b><span>${esc(o.method)}</span></div><div><b>Txn ID</b><span>${esc(o.txid)}</span></div>${o.status==='active'&&o.acct?`<div><b>Acc. email</b><span>${esc(o.acct.email)}</span></div><div><b>Acc. pass</b><span>${esc(o.acct.password)}</span></div>`:''}</div>
   <div class="aob"><button class="btn out sm" data-sh="${esc(o.id)}">View screenshot</button>${acts}</div></div>`}).join('')
   :'<p class="note">No orders in this list.</p>';
  document.querySelectorAll('[data-sh]').forEach(b=>b.onclick=async()=>{b.disabled=true;
   try{const j=await oapi('GET',{admin:1,q:'?shot='+encodeURIComponent(b.dataset.sh)});
    sheet('',`<h3>Payment screenshot</h3><img class="shotimg" alt="Payment screenshot" src="${esc(j.shot||'')}"><div class="mb"><button class="btn gold sm" data-x="c" type="button">Close</button></div>`)}
   catch(e){toast(apiErr(e),'error')}finally{b.disabled=false}});
- document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const o=aO.find(x=>x.id===b.dataset.id);if(!o)return;const a=b.dataset.a;
+ document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const o=aO.find(x=>x.id===b.dataset.id);if(!o)return;const a=b.dataset.a;if(a==='active'){approveForm(o);return}
   const T={active:['Approve this order?','The plan will be marked Active and the customer will see it instantly.','Approve'],rejected:['Reject this order?','The customer will see this payment as Rejected.','Reject'],waiting:['Move back to waiting?','The order returns to the waiting list.','Move'],del:['Delete this order?','This permanently removes the order and its screenshot.','Delete']}[a];
   ui({title:T[0],text:T[1],rows:[['Order',o.id],['Customer',o.name],['Plan',o.product],['Activate on',o.actEmail||o.email],['Txn ID',o.txid]],ok:T[2],icon:a==='del'?'warn':'info',onOk:async()=>{
    try{if(a==='del')await oapi('DELETE',{admin:1,body:{id:o.id}});else await oapi('POST',{admin:1,body:{action:'status',id:o.id,status:a}});
