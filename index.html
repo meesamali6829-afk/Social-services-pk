@@ -225,10 +225,9 @@ input::-ms-reveal,input::-ms-clear{display:none}
 <div id="root"></div>
 <a class="fab" id="fab" target="_blank" rel="noopener" aria-label="Chat on WhatsApp"><svg viewBox="0 0 32 32"><path d="M16 3C9.4 3 4 8.3 4 14.9c0 2.3.7 4.5 1.9 6.3L4 29l8-2.1c1.2.6 2.600.9 4 .9 6.600 0 12-5.300 12-11.900S22.600 3 16 3zm0 21.700c-1.300 0-2.500-.3-3.600-1l-.5-.3-4.700 1.200 1.300-4.600-.3-.5a9.600 9.600 0 0 1-1.500-5.200C6.700 9.700 10.900 5.600 16 5.600s9.300 4.100 9.300 9.300-4.200 9.800-9.300 9.800zm5.300-7.300c-.3-.1-1.700-.8-2-.9-.3-.1-.5-.1-.7.100-.2.300-.8.900-.9 1.100-.2.200-.3.200-.6.100-1.700-.8-2.800-1.500-3.900-3.400-.3-.5.300-.5.900-1.600.1-.2 0-.4 0-.5l-.9-2.100c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.100-.8.400-.3.300-1 1-1 2.500s1.100 2.900 1.200 3.100c.1.200 2.100 3.300 5.200 4.600 1.900.8 2.700.9 3.600.7.600-.1 1.700-.7 2-1.400.2-.7.200-1.300.2-1.400-.1-.2-.3-.3-.6-.4z"/></svg></a>
 <script>
-/* ---- SETUP: paste your Firebase details here (see instructions) ---- */
-const FIREBASE_CONFIG={apiKey:'PASTE_API_KEY',authDomain:'PASTE_PROJECT_ID.firebaseapp.com',projectId:'PASTE_PROJECT_ID',appId:'PASTE_APP_ID'};
-const ADMIN_EMAIL='owner@example.com'; // the email you create in Firebase > Authentication
-const ADMIN_PASS_HASH='6813d87abc95c9bf4a438ff296c33b56f56b12e109912bc34dc27af8b66d27d5'; // SHA-256 of the owner password (see note: to change, run: sha256 of new password)
+/* Products that are live on the website (the admin panel updates this for you) */
+const BAKED=/*PJ*/[]/*PJE*/;
+const ADMIN_PASS_HASH='6813d87abc95c9bf4a438ff296c33b56f56b12e109912bc34dc27af8b66d27d5'; // SHA-256 of the owner password
 async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')}
 const DEFAULT_WA='923005591403';
 let D={settings:{},products:[]},cat='All';
@@ -426,55 +425,38 @@ function initReport(){
  };
 }
 function boot2(){ME=currentUser();if(ME)site();else authView('signup')}
-/* ===== FIREBASE + ADMIN PANEL (owner only, open with  yoursite/#admin) ===== */
-let inAdmin=false,unsubAuth=null,FB=null;
-async function fb(){
- if(FB)return FB;
- if(!FIREBASE_CONFIG.apiKey||FIREBASE_CONFIG.apiKey.indexOf('PASTE')===0)throw new Error('not-configured');
- const V='https://www.gstatic.com/firebasejs/10.12.2/';
- const [a,au,fs]=await Promise.all([import(V+'firebase-app.js'),import(V+'firebase-auth.js'),import(V+'firebase-firestore.js')]);
- const app=a.initializeApp(FIREBASE_CONFIG);
- FB={auth:au.getAuth(app),db:fs.getFirestore(app),m:{...au,...fs}};return FB}
-async function loadData(){
- D={settings:{whatsapp:DEFAULT_WA,phone:'03005591403'},products:[]};
- try{const f=await fb(),m=f.m;
-  const s=await m.getDoc(m.doc(f.db,'settings','main'));if(s.exists())D.settings={...D.settings,...s.data()};
-  const p=await m.getDocs(m.collection(f.db,'products'));D.products=p.docs.map(x=>x.data()).sort((x,y)=>(x.t||0)-(y.t||0));
- }catch(e){console.warn('Data not loaded:',e.message)}}
+/* ===== ADMIN PANEL (owner only, open with  yoursite/#admin) ===== */
+const sig=s=>{let h=5381;for(let i=0;i<s.length;i++)h=((h<<5)+h+s.charCodeAt(i))>>>0;return s.length+':'+h};
+const DKEY='ssp_draft_v1';
+const BSIG=()=>sig(JSON.stringify(BAKED));
+function items(){const d=LS.get(DKEY,null);return(d&&d.base===BSIG()&&Array.isArray(d.items)?d.items:BAKED).slice()}
+const saveItems=a=>LS.set(DKEY,{base:BSIG(),items:a});
+let inAdmin=false;
+const isAdm=()=>{try{return sessionStorage.getItem('adm_ok')==='1'}catch(e){return false}};
+async function loadData(){D={settings:{whatsapp:DEFAULT_WA,phone:'03005591403'},products:items().sort((x,y)=>(x.t||0)-(y.t||0))}}
 function shrink(file,max,limit){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);
  img.onload=()=>{URL.revokeObjectURL(u);const k=Math.min(1,max/Math.max(img.width,img.height)),w=Math.round(img.width*k),h=Math.round(img.height*k),c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);
   let q=.85,d;do{d=c.toDataURL('image/webp',q);if(d.indexOf('data:image/png')===0)d=c.toDataURL('image/jpeg',q);q-=.12}while(d.length>limit&&q>.2);
   d.length>limit?rej(new Error('Image is too large. Please choose a smaller image.')):res(d)};
  img.onerror=()=>rej(new Error('This file is not a valid image.'));img.src=u})}
-const fbErr=e=>/permission|insufficient/i.test(e.message||'')?'Permission denied. Check your Firestore rules and admin email.':(e.message||'Something went wrong.');
-
 function adminShell(html){$('#fab').style.display='none';document.title='Admin | Social Services PK';$('#root').innerHTML=html}
-function adminSetup(){adminShell(`<div class="adm"><div class="fm" style="max-width:640px;margin:40px auto"><h3>Admin setup needed</h3><p class="note">Password is correct, but Firebase is not configured yet. Open <code>index.html</code>, paste your Firebase details into <code>FIREBASE_CONFIG</code> and set <code>ADMIN_EMAIL</code> at the top of the script, then upload the file again.</p><a class="btn out sm" href="#">Back to website</a></div></div>`)}
-async function adminView(){
- inAdmin=true;ME=null;
- let f=null;try{f=await fb()}catch(e){}
- if(unsubAuth)unsubAuth();
- if(!f)return adminLogin(null);
- unsubAuth=f.m.onAuthStateChanged(f.auth,u=>{if(!inAdmin)return;(u&&u.email&&u.email.toLowerCase()===ADMIN_EMAIL.toLowerCase())?adminPanel(f):adminLogin(f)})}
+function adminView(){inAdmin=true;ME=null;isAdm()?adminPanel():adminLogin()}
 
-function adminLogin(f){
+function adminLogin(){
  adminShell(`<main class="auf" style="min-height:100vh"><form class="af" id="alf" novalidate><div class="bl" style="display:flex;align-items:center;gap:14px;margin-bottom:30px">${logoImg()}<b style="font:700 22px 'Playfair Display',serif;color:#f3ecd9">Admin Access</b></div>
  <h2>Owner login</h2><p class="sub">Enter your admin password to manage products.</p><div class="msg" id="msg"></div>
  <div class="f"><label for="ap">Password</label><div class="pw"><input id="ap" type="password" autocomplete="current-password" placeholder="Admin password"><button type="button" id="ash">Show</button></div></div>
  <button class="btn gold" id="asb" type="submit">Sign In</button><div class="alt2"><a href="#">Back to website</a></div></form></main>`);
  $('#ash').onclick=()=>{const i=$('#ap'),s=i.type==='password';i.type=s?'text':'password';$('#ash').textContent=s?'Hide':'Show'};
- $('#alf').onsubmit=async ev=>{ev.preventDefault();const b=$('#asb'),pw=$('#ap').value;if(!pw)return;b.disabled=true;
-  const m=$('#msg');
+ $('#alf').onsubmit=async ev=>{ev.preventDefault();const b=$('#asb'),pw=$('#ap').value,m=$('#msg');if(!pw)return;b.disabled=true;
   let h;try{h=await sha256(pw)}catch(e){m.className='msg err';m.textContent='Please open the site over https to log in.';b.disabled=false;return}
   if(h!==ADMIN_PASS_HASH){m.className='msg err';m.textContent='Incorrect password.';b.disabled=false;return}
-  if(!f)return adminSetup();
-  try{await f.m.signInWithEmailAndPassword(f.auth,ADMIN_EMAIL,pw)}
-  catch(e){m.className='msg err';m.textContent=/network/i.test(e.code||'')?'Network error. Please try again.':'Password is correct, but the Firebase owner account needs the same password.';b.disabled=false}}}
+  try{sessionStorage.setItem('adm_ok','1')}catch(e){}
+  adminPanel()}}
 
-function adminPanel(f){
- const m=f.m;
+function adminPanel(){
  adminShell(`<div class="adm"><header class="ah"><div class="bl2">${logoImg()}<span>Admin Panel</span></div><div style="display:flex;gap:10px"><a class="btn out sm" href="#">View website</a><button class="btn out sm" id="alo">Log out</button></div></header>
- <div class="ag"><section class="fm"><h3 id="pt">Add product</h3><form id="pf" novalidate>
+ <div class="ag"><section class="fm"><h3>Add product</h3><form id="pf" novalidate>
   <div class="f"><label for="pn">Product name</label><input id="pn" maxlength="80" placeholder="e.g. Netflix Premium"></div>
   <div class="r2"><div class="f"><label for="pc">Category</label><input id="pc" maxlength="40" placeholder="e.g. Streaming"></div><div class="f"><label for="pd">Duration</label><input id="pd" maxlength="40" placeholder="e.g. 1 month"></div></div>
   <div class="r2"><div class="f"><label for="pp">Price</label><input id="pp" type="number" inputmode="decimal" min="0" placeholder="500"></div><div class="f"><label for="po">Old price (optional)</label><input id="po" type="number" inputmode="decimal" min="0" placeholder="800"></div></div>
@@ -482,25 +464,36 @@ function adminPanel(f){
   <div class="f"><label for="pf2">Features (one per line)</label><textarea id="pf2" maxlength="800" placeholder="Full HD quality&#10;Private profile"></textarea></div>
   <div class="f"><label for="pi">Product image</label><img class="pv" id="pv" alt=""><input id="pi" type="file" accept="image/*"></div>
   <label class="ck"><input type="checkbox" id="pst" checked> In stock</label>
-  <div style="display:flex;gap:10px"><button class="btn gold" id="psb" type="submit" style="flex:1">Publish product</button></div></form></section>
+  <div style="display:flex;gap:10px"><button class="btn gold" id="psb" type="submit" style="flex:1">Add product</button></div></form></section>
  <section class="fm"><h3>Your products</h3><div id="pl"></div></section>
+ <section class="fm" style="grid-column:1/-1"><h3>Make changes live</h3><p class="note" id="ps"></p><button class="btn gold" id="dl" type="button">Download updated index.html</button></section>
 </div></div>`);
  const reset=()=>{$('#pf').reset();$('#pst').checked=true;$('#pv').style.display='none'};
- const draw=()=>{const cur=esc((D.settings||{}).currency||'Rs.');$('#pl').innerHTML=D.products.length?D.products.map(p=>`<div class="pi">${p.image?`<img src="${esc(p.image)}" alt="">`:'<i></i>'}<div><b>${esc(p.name)}</b><span>${cur} ${esc(p.price)}${p.duration?' · '+esc(p.duration):''}${p.in_stock===false?' · Out of stock':''}</span></div><button class="btn out sm" data-d="${esc(p.id)}">Delete</button></div>`).join(''):'<p class="note">No products yet. Add your first product on the left.</p>';
-  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const p=D.products.find(x=>x.id===b.dataset.d);if(!p)return;
-   ui({title:'Delete product?',text:'"'+p.name+'" will be removed from your website.',ok:'Delete',icon:'warn',onOk:async()=>{try{await m.deleteDoc(m.doc(f.db,'products',p.id));await loadData();draw();toast('Product deleted.','success')}catch(e){toast(fbErr(e),'error')}}})})};
+ const dirty=()=>JSON.stringify(items())!==JSON.stringify(BAKED);
+ const draw=()=>{const cur=esc((D.settings||{}).currency||'Rs.'),list=items().sort((x,y)=>(x.t||0)-(y.t||0));
+  $('#pl').innerHTML=list.length?list.map(p=>`<div class="pi">${p.image?`<img src="${esc(p.image)}" alt="">`:'<i></i>'}<div><b>${esc(p.name)}</b><span>${cur} ${esc(p.price)}${p.duration?' \u00b7 '+esc(p.duration):''}${p.in_stock===false?' \u00b7 Out of stock':''}</span></div><button class="btn out sm" data-d="${esc(p.id)}">Delete</button></div>`).join(''):'<p class="note">No products yet. Add your first product on the left.</p>';
+  $('#ps').textContent=dirty()?'You have changes that are not live yet. Download the updated file, then upload it to Vercel in place of the old index.html. After that, everything is live for all visitors.':'Everything is live. Nothing to upload.';
+  document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const p=list.find(x=>x.id===b.dataset.d);if(!p)return;
+   ui({title:'Delete product?',text:'"'+p.name+'" will be removed from your website.',ok:'Delete',icon:'warn',onOk:()=>{if(!saveItems(items().filter(x=>x.id!==p.id)))return toast('Could not save. Please enable browser storage.','error');loadData();draw();toast('Product deleted. Download the updated file to make it live.','success')}})})};
  $('#pi').onchange=e=>{const x=e.target.files[0];if(x){$('#pv').src=URL.createObjectURL(x);$('#pv').style.display='block'}};
- $('#alo').onclick=()=>m.signOut(f.auth);
+ $('#alo').onclick=()=>{try{sessionStorage.removeItem('adm_ok')}catch(e){}adminLogin()};
  $('#pf').onsubmit=async ev=>{ev.preventDefault();
   const name=$('#pn').value.trim(),price=parseFloat($('#pp').value),old=parseFloat($('#po').value);
   if(!name)return toast('Please enter the product name.','error');
   if(!isFinite(price)||price<0)return toast('Please enter a valid price.','error');
   const b=$('#psb');b.disabled=true;
   try{let image='';const file=$('#pi').files[0];if(file)image=await shrink(file,900,400000);
-   const id='p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
-   await m.setDoc(m.doc(f.db,'products',id),{id,name:name.slice(0,80),category:$('#pc').value.trim().slice(0,40),duration:$('#pd').value.trim().slice(0,40),price,old_price:isFinite(old)&&old>=0?old:null,badge:$('#pb').value.trim().slice(0,24),features:$('#pf2').value.slice(0,800),image:image||'',in_stock:$('#pst').checked,t:Date.now()});
-   await loadData();draw();reset();toast('Published. Your website is updated.','success')
-  }catch(e){toast(fbErr(e),'error')}finally{b.disabled=false}};
+   const p={id:'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:name.slice(0,80),category:$('#pc').value.trim().slice(0,40),duration:$('#pd').value.trim().slice(0,40),price,old_price:isFinite(old)&&old>=0?old:null,badge:$('#pb').value.trim().slice(0,24),features:$('#pf2').value.slice(0,800),image,in_stock:$('#pst').checked,t:Date.now()};
+   if(!saveItems([...items(),p]))throw new Error('Could not save. The image may be too large or browser storage is off.');
+   await loadData();draw();reset();toast('Product added. Download the updated file to make it live.','success')
+  }catch(e){toast(e.message||'Something went wrong.','error')}finally{b.disabled=false}};
+ $('#dl').onclick=async()=>{const b=$('#dl');b.disabled=true;
+  try{const r=await fetch(location.href.split('#')[0].split('?')[0],{cache:'no-store'});let t=await r.text();
+   const a=t.indexOf('/*PJ*/'),z=t.indexOf('/*PJE*/');if(a<0||z<a)throw new Error('x');
+   t=t.slice(0,a+6)+JSON.stringify(items()).replace(/</g,'\\u003c')+t.slice(z);
+   const u=URL.createObjectURL(new Blob([t],{type:'text/html'})),l=document.createElement('a');l.href=u;l.download='index.html';document.body.appendChild(l);l.click();l.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+   toast('Downloaded. Now upload this index.html to Vercel.','success')
+  }catch(e){toast('Could not prepare the file. Please try again.','error')}finally{b.disabled=false}};
  draw()}
 
 window.addEventListener('hashchange',()=>{if(location.hash==='#admin'&&!inAdmin)adminView();else if(inAdmin&&location.hash!=='#admin'){inAdmin=false;boot2()}});
