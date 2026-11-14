@@ -220,6 +220,7 @@ footer .soc a.fb:hover{background:#1877f2}footer .soc a.ig:hover{background:line
 footer .soc a.wc:hover,footer .soc a.wm:hover{background:#1f9d57}
 @media(max-width:600px){footer .soc a{flex:1 1 calc(50% - 10px);justify-content:center}}
 
+.card .im{position:relative}.card .im img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
 /* ===== PAYMENT + ORDERS ===== */
 .mc.pay{max-width:600px;text-align:left;max-height:92vh;max-height:92dvh;overflow:auto;padding:30px 26px 24px}
 .mc.pay h3{font-size:26px;padding-right:36px}.mc.pay>p{margin:6px 0 0}
@@ -333,7 +334,7 @@ function site(){
  <section class="s" id="services"><div class="w"><div class="head"><div class="eyebrow">Our Services</div><h2>Select the plan that suits you</h2><p>Every service is clearly priced. Choose a plan, pay by bank transfer and track your order right here.</p></div>
   ${cats.length>2?`<div class="chips">${cats.map(c=>`<button class="chip ${c===cat?'on':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</div>`:''}
   ${list.length?`<div class="grid">${list.map(p=>{const l=wa(`Hello ${name}, I would like to order: ${p.name}${p.duration?' ('+p.duration+')':''} - ${money(p.price).replace(/&amp;/g,'&')}`);
-  return `<article class="card">${p.badge?`<span class="bdg">${esc(p.badge)}</span>`:''}<div class="im">${p.image?`<img loading="lazy" src="${esc(p.image)}" alt="${esc(p.name)}">`:esc((p.name||'?')[0])}</div>
+  return `<article class="card">${p.badge?`<span class="bdg">${esc(p.badge)}</span>`:''}<div class="im">${pimg(p)?`<img decoding="async" src="${esc(pimg(p))}" alt="${esc(p.name)}" onerror="this.parentNode.textContent=(this.alt||'?').charAt(0)">`:esc((p.name||'?')[0])}</div>
   <div class="bd">${p.category?`<div class="cat">${esc(p.category)}</div>`:''}<h3>${esc(p.name)}</h3>
   <ul>${(p.features||'').split('\n').filter(x=>x.trim()).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
   <div class="pr"><b>${money(p.price)}</b>${p.old_price?`<s>${money(p.old_price)}</s>`:''}${p.duration?`<small>/ ${esc(p.duration)}</small>`:''}</div>
@@ -472,6 +473,11 @@ function initReport(){
  };
 }
 function boot2(){ME=currentUser();if(ME)site();else authView('signup')}
+/* product image resolver: accepts data URL, http(s) URL, /path, raw base64, or alternate field names */
+function pimg(p){let v=p.image||p.img||p.photo||p.picture||p.image_url||p.imageUrl||'';if(Array.isArray(v))v=v[0]||'';v=String(v||'').trim();if(!v)return '';
+ if(/^(data:|https?:|\/|blob:)/i.test(v))return v;
+ if(/^[A-Za-z0-9+\/=\s]{200,}$/.test(v))return 'data:image/'+(v.indexOf('/9j/')===0?'jpeg':v.indexOf('iVBOR')===0?'png':'webp')+';base64,'+v.replace(/\s/g,'');
+ return v}
 /* ===== PAYMENTS + ORDERS ===== */
 const PAY=[
  {name:'Easypaisa',holder:'Muhammad Kamil Zafar',lbl:'Number',num:'03335822312',iban:'PK65TMFB0000000091602087'},
@@ -503,6 +509,7 @@ function payModal(p){
  <form id="of" novalidate><div class="msg" id="om"></div>
   <div class="r2"><div class="f"><label for="on">Your name</label><input id="on" maxlength="80" autocomplete="name" value="${esc(ME.name)}"></div>
   <div class="f"><label for="oe">Your email</label><input id="oe" type="email" maxlength="120" autocomplete="email" value="${esc(ME.email)}"></div></div>
+  <div class="f"><label for="oa">Which email should we activate the plan on? *</label><input id="oa" type="email" maxlength="120" autocomplete="off" placeholder="Email address for your subscription"><p class="hint">Enter the exact email address on which you want this plan to be activated.</p></div>
   <div class="r2"><div class="f"><label for="ow">Your WhatsApp number</label><input id="ow" type="tel" inputmode="tel" maxlength="20" placeholder="03XX XXXXXXX" value="${esc(LS.get('ssp_wa_'+ME.email,''))}"></div>
   <div class="f"><label for="om2">Paid via</label><select id="om2">${PAY.map(a=>`<option>${a.name}</option>`).join('')}</select></div></div>
   <div class="f"><label for="ot">Transaction ID</label><input id="ot" maxlength="40" autocomplete="off" placeholder="Transaction ID from your payment receipt"></div>
@@ -512,15 +519,17 @@ function payModal(p){
  $('#os').onchange=e=>{const x=e.target.files[0],v=$('#osp');if(x){v.src=URL.createObjectURL(x);v.style.display='block'}else v.style.display='none'};
  const msg=t=>{const m=$('#om');m.className='msg err';m.textContent=t;m.scrollIntoView({block:'nearest'})};
  $('#of').onsubmit=async ev=>{ev.preventDefault();
-  const name=$('#on').value.trim(),email=normEmail($('#oe').value),wa=$('#ow').value.replace(/\D/g,''),tx=$('#ot').value.trim(),file=$('#os').files[0];
+  const name=$('#on').value.trim(),email=normEmail($('#oe').value),act=normEmail($('#oa').value),wa=$('#ow').value.replace(/\D/g,''),tx=$('#ot').value.trim(),file=$('#os').files[0];
   if(name.length<2)return msg('Please enter your name.');
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return msg('Please enter a valid email address.');
+  if(!act)return msg('Please enter the email address on which the plan should be activated.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(act))return msg('The activation email address is not valid. Please check it.');
   if(wa.length<10||wa.length>15)return msg('Please enter a valid WhatsApp number.');
   if(tx.length<6)return msg('Please enter the Transaction ID from your payment receipt.');
   if(!file)return msg('Please upload your payment screenshot.');
   const b=$('#osb');b.disabled=true;b.textContent='Submitting...';
   try{const shot=await shrink(file,1000,380000);
-   await oapi('POST',{body:{action:'create',order:{product:p.name,duration:p.duration||'',price:p.price,name,email,whatsapp:wa,method:$('#om2').value,txid:tx,screenshot:shot}}});
+   await oapi('POST',{body:{action:'create',order:{product:p.name,duration:p.duration||'',price:p.price,name,email,activation_email:act,whatsapp:wa,method:$('#om2').value,txid:tx,screenshot:shot}}});
    LS.set('ssp_wa_'+ME.email,$('#ow').value.trim());closeUi();
    ui({title:'Payment submitted',text:'Your order is now waiting for approval. Once our team confirms your payment, its status under My Orders changes to Active automatically.',icon:'success',cancel:null,ok:'View my orders',onOk:()=>{loadMyOrders();const o=$('#orders');o&&o.scrollIntoView()}});
    loadMyOrders(true)
@@ -534,7 +543,7 @@ async function loadMyOrders(quiet){const box=$('#ol');if(!box||!ME)return;
   b2.innerHTML=list.length?list.map(o=>{const s=ST[o.status]||ST.waiting;
    return `<div class="od"><div class="odh"><b>${esc(o.product)}</b><span class="stt ${s[1]}">${s[0]}</span></div>
    <div class="odm">${money(o.price)}${o.duration?' \u00b7 '+esc(o.duration):''} \u00b7 ${fdate(o.t)} \u00b7 ${esc(o.id)}</div>
-   <p>${o.status==='active'?'Your plan is active. Thank you for choosing us.':o.status==='rejected'?'We could not verify this payment. Please contact us on WhatsApp.':'Waiting for our team to verify your payment.'}</p></div>`}).join('')
+   ${o.actEmail?`<div class="odm">Plan email: ${esc(o.actEmail)}</div>`:''}<p>${o.status==='active'?'Your plan is active. Thank you for choosing us.':o.status==='rejected'?'We could not verify this payment. Please contact us on WhatsApp.':'Waiting for our team to verify your payment.'}</p></div>`}).join('')
   :'<div class="od"><div class="odm" style="margin:0;text-align:center">You have no orders yet. Choose a service above and press Buy Now to get started.</div></div>'
  }catch(e){if(!quiet)box.innerHTML='<div class="od"><div class="odm" style="margin:0">Your orders could not be loaded right now. Please try again shortly.</div></div>'}}
 /* ===== ADMIN PANEL (owner only, open with  yoursite/#admin) ===== */
@@ -587,7 +596,7 @@ function adminPanel(){
  <section class="fm"><h3>Your products</h3><div id="pl"></div></section>
 </div></div>`);
  const reset=()=>{$('#pf').reset();$('#pst').checked=true;$('#pv').style.display='none'};
- const draw=()=>{const cur=esc((D.settings||{}).currency||'Rs.');$('#pl').innerHTML=D.products.length?D.products.map(p=>`<div class="pi">${p.image?`<img src="${esc(p.image)}" alt="">`:'<i></i>'}<div><b>${esc(p.name)}</b><span>${cur} ${esc(p.price)}${p.duration?' \u00b7 '+esc(p.duration):''}${p.in_stock===false?' \u00b7 Out of stock':''}</span></div><button class="btn out sm" data-d="${esc(p.id)}">Delete</button></div>`).join(''):'<p class="note">No products yet. Add your first product on the left.</p>';
+ const draw=()=>{const cur=esc((D.settings||{}).currency||'Rs.');$('#pl').innerHTML=D.products.length?D.products.map(p=>`<div class="pi">${pimg(p)?`<img src="${esc(pimg(p))}" alt="">`:'<i></i>'}<div><b>${esc(p.name)}</b><span>${cur} ${esc(p.price)}${p.duration?' \u00b7 '+esc(p.duration):''}${p.in_stock===false?' \u00b7 Out of stock':''}</span></div><button class="btn out sm" data-d="${esc(p.id)}">Delete</button></div>`).join(''):'<p class="note">No products yet. Add your first product on the left.</p>';
   document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const p=D.products.find(x=>x.id===b.dataset.d);if(!p)return;
    ui({title:'Delete product?',text:'"'+p.name+'" will be removed from your website.',ok:'Delete',icon:'warn',onOk:async()=>{try{await api('DELETE',{id:p.id});await loadData();draw();toast('Product deleted.','success')}catch(e){toast(apiErr(e),'error')}}})})};
  $('#pi').onchange=e=>{const x=e.target.files[0];if(x){$('#pv').src=URL.createObjectURL(x);$('#pv').style.display='block'}};
@@ -619,7 +628,7 @@ function drawAO(){if(!$('#oal'))return;
   const acts=(o.status!=='active'?`<button class="btn gold sm" data-a="active" data-id="${esc(o.id)}">Approve</button>`:'')+(o.status==='waiting'?`<button class="btn out sm" data-a="rejected" data-id="${esc(o.id)}">Reject</button>`:'')+(o.status!=='waiting'?`<button class="btn out sm" data-a="waiting" data-id="${esc(o.id)}">Move to waiting</button>`:'')+`<button class="btn out sm" data-a="del" data-id="${esc(o.id)}">Delete</button>`;
   return `<div class="ao"><div class="aoh"><b>${esc(o.product)}</b><span class="stt ${s[1]}">${s[0]}</span></div>
   <div class="aom">${money(o.price)}${o.duration?' \u00b7 '+esc(o.duration):''} \u00b7 ${fdate(o.t)} \u00b7 ${esc(o.id)}</div>
-  <div class="mdt"><div><b>Name</b><span>${esc(o.name)}</span></div><div><b>Email</b><span>${esc(o.email)}</span></div><div><b>WhatsApp</b><span><a target="_blank" rel="noopener" href="https://wa.me/${esc(o.whatsapp)}">${esc(o.whatsapp)}</a></span></div><div><b>Paid via</b><span>${esc(o.method)}</span></div><div><b>Txn ID</b><span>${esc(o.txid)}</span></div></div>
+  <div class="mdt"><div><b>Name</b><span>${esc(o.name)}</span></div><div><b>Email</b><span>${esc(o.email)}</span></div><div><b>Activate on</b><span><strong>${esc(o.actEmail||o.email)}</strong></span></div><div><b>WhatsApp</b><span><a target="_blank" rel="noopener" href="https://wa.me/${esc(o.whatsapp)}">${esc(o.whatsapp)}</a></span></div><div><b>Paid via</b><span>${esc(o.method)}</span></div><div><b>Txn ID</b><span>${esc(o.txid)}</span></div></div>
   <div class="aob"><button class="btn out sm" data-sh="${esc(o.id)}">View screenshot</button>${acts}</div></div>`}).join('')
   :'<p class="note">No orders in this list.</p>';
  document.querySelectorAll('[data-sh]').forEach(b=>b.onclick=async()=>{b.disabled=true;
@@ -628,7 +637,7 @@ function drawAO(){if(!$('#oal'))return;
   catch(e){toast(apiErr(e),'error')}finally{b.disabled=false}});
  document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const o=aO.find(x=>x.id===b.dataset.id);if(!o)return;const a=b.dataset.a;
   const T={active:['Approve this order?','The plan will be marked Active and the customer will see it instantly.','Approve'],rejected:['Reject this order?','The customer will see this payment as Rejected.','Reject'],waiting:['Move back to waiting?','The order returns to the waiting list.','Move'],del:['Delete this order?','This permanently removes the order and its screenshot.','Delete']}[a];
-  ui({title:T[0],text:T[1],rows:[['Order',o.id],['Customer',o.name],['Plan',o.product],['Txn ID',o.txid]],ok:T[2],icon:a==='del'?'warn':'info',onOk:async()=>{
+  ui({title:T[0],text:T[1],rows:[['Order',o.id],['Customer',o.name],['Plan',o.product],['Activate on',o.actEmail||o.email],['Txn ID',o.txid]],ok:T[2],icon:a==='del'?'warn':'info',onOk:async()=>{
    try{if(a==='del')await oapi('DELETE',{admin:1,body:{id:o.id}});else await oapi('POST',{admin:1,body:{action:'status',id:o.id,status:a}});
     await refreshAO(true);toast(a==='del'?'Order deleted.':'Order updated.','success')}catch(e){toast(apiErr(e),'error')}}})})}
 window.addEventListener('hashchange',()=>{if(location.hash==='#admin'&&!inAdmin)adminView();else if(inAdmin&&location.hash!=='#admin'){inAdmin=false;boot2()}});
