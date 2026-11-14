@@ -219,6 +219,41 @@ footer .soc a:hover{transform:translateY(-2px);color:#fff;border-color:transpare
 footer .soc a.fb:hover{background:#1877f2}footer .soc a.ig:hover{background:linear-gradient(45deg,#f09433,#dc2743 50%,#bc1888)}
 footer .soc a.wc:hover,footer .soc a.wm:hover{background:#1f9d57}
 @media(max-width:600px){footer .soc a{flex:1 1 calc(50% - 10px);justify-content:center}}
+
+/* ===== PAYMENT + ORDERS ===== */
+.mc.pay{max-width:600px;text-align:left;max-height:92vh;max-height:92dvh;overflow:auto;padding:30px 26px 24px}
+.mc.pay h3{font-size:26px;padding-right:36px}.mc.pay>p{margin:6px 0 0}
+.mc .x{position:absolute;right:14px;top:12px;width:36px;height:36px;border-radius:50%;border:1px solid var(--bd);background:transparent;color:#c5d3ee;font-size:22px;line-height:1;cursor:pointer}
+.mc .x:hover{border-color:var(--gold);color:#fff}
+.sum{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 0 6px;padding:14px 16px;border:1px solid rgba(59,130,246,.45);background:rgba(59,130,246,.1);border-radius:10px}
+.sum span b{display:block;color:#f1f6ff}.sum small{color:var(--mut)}.sum strong{font:600 24px "Playfair Display",serif;color:#fff;white-space:nowrap}
+.pyh{font:600 11.5px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin:20px 0 10px}
+.pyacc{border:1px solid var(--bd);background:#0a1634;border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.pyacc>b{color:#f1f6ff;font-size:15px}.pyacc>span{color:var(--mut);font-size:13px;margin-left:8px}
+.pyrow{display:flex;align-items:center;gap:10px;margin-top:9px}.pyrow small{flex:none;width:64px;color:var(--mut);font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.pyrow code{flex:1;min-width:0;word-break:break-all;color:#dbe5f7;font:500 13.5px ui-monospace,Menlo,Consolas,monospace}
+.cp{flex:none;border:1px solid var(--bd);background:transparent;color:var(--gold2);border-radius:6px;padding:6px 11px;font:600 11px Inter;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}.cp:hover{border-color:var(--gold)}
+.pay .f{margin-bottom:14px}.pay label{display:block;font:600 11.5px Inter;letter-spacing:.14em;text-transform:uppercase;color:var(--gold2);margin:0 0 7px}
+.pay .r2{gap:12px}.pay .shot{max-width:100%;max-height:170px;border-radius:8px;margin:0 0 10px;display:none}
+.pay .hint{color:var(--mut);font-size:12.5px;margin:6px 0 0}.pay .msg{margin-top:4px}.pay .btn{width:100%;margin-top:6px}
+.olist{display:grid;gap:14px;max-width:860px;margin:0 auto}
+.od,.ao{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:20px 22px}
+.odh,.aoh{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.odh b,.aoh b{color:#f1f6ff;font-size:18px}
+.odm,.aom{color:var(--mut);font-size:13.5px;margin-top:6px;word-break:break-word}.od p{margin:10px 0 0;color:#c5d3ee;font-size:14.5px}
+.stt{display:inline-flex;align-items:center;gap:7px;padding:5px 13px;border-radius:99px;font:600 11.5px Inter;letter-spacing:.08em;text-transform:uppercase;border:1px solid}
+.stt:before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.stt.w{color:#fbbf24;border-color:rgba(251,191,36,.45);background:rgba(251,191,36,.1)}
+.stt.a{color:#4ade80;border-color:rgba(74,222,128,.45);background:rgba(74,222,128,.1)}
+.stt.r{color:#ff9d9d;border-color:rgba(216,90,90,.5);background:rgba(216,90,90,.1)}
+.tabs{display:flex;gap:8px;margin-bottom:22px}
+.tb{border:1px solid var(--bd);background:var(--card);color:#c5d3ee;border-radius:99px;padding:10px 22px;font:600 13px Inter;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;display:inline-flex;gap:8px;align-items:center}
+.tb.on{background:var(--gold);border-color:var(--gold);color:#fff}
+.tb i{font-style:normal;background:#f59e0b;color:#111;border-radius:99px;min-width:20px;height:20px;padding:0 6px;font-size:11px;display:inline-grid;place-items:center}.tb i:empty{display:none}
+.ofl{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}.oal{display:grid;gap:14px}
+.aob{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}.aob .btn{padding:10px 16px;font-size:12px}
+.mdt a{color:var(--gold2)}.shotimg{width:100%;border-radius:8px;display:block;margin-top:4px}
+@media(max-width:600px){.pyrow small{width:50px}.mc.pay{padding:26px 18px calc(22px + env(safe-area-inset-bottom,0px))}.sum strong{font-size:20px}}
 /* ===== ADMIN PANEL ===== */
 .adm{max-width:1100px;margin:0 auto;padding:20px 18px 60px}
 .ah{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0 24px;border-bottom:1px solid var(--bd);margin-bottom:28px}
@@ -289,33 +324,34 @@ function site(){
  $('#root').innerHTML=`
  <nav><div class="w"><a class="logo" href="#home">${logoImg()}<span class="n">${esc(name)}</span></a>
   <button class="ham" id="ham" aria-label="Menu"><i></i><i></i><i></i></button>
-  <div class="menu" id="menu"><a class="l" href="#services">Services</a><a class="l" href="#about">About</a><a class="l" href="#process">Process</a><a class="l" href="#faq">FAQ</a><a class="l" href="#report">Report</a><span class="usr"><i>${esc(ME.name[0].toUpperCase())}</i>${esc(ME.name.split(" ")[0])}</span><button class="btn out sm" id="lo">Log out</button><a class="btn wa sm" target="_blank" rel="noopener" href="${chat}">${WAI}Chat on WhatsApp</a></div></div></nav>
+  <div class="menu" id="menu"><a class="l" href="#services">Services</a><a class="l" href="#orders">My Orders</a><a class="l" href="#about">About</a><a class="l" href="#process">Process</a><a class="l" href="#faq">FAQ</a><a class="l" href="#report">Report</a><span class="usr"><i>${esc(ME.name[0].toUpperCase())}</i>${esc(ME.name.split(" ")[0])}</span><button class="btn out sm" id="lo">Log out</button><a class="btn wa sm" target="_blank" rel="noopener" href="${chat}">${WAI}Chat on WhatsApp</a></div></div></nav>
  <header class="hero" id="home"><div class="bg">${st.hero_image?`<img src="${esc(st.hero_image)}" alt="">`:banner()}</div><div class="ov"></div>
   <div class="w"><div class="eyebrow">Trusted Digital Services</div><h1>Premium subscriptions,<br>delivered with <em>integrity.</em></h1>
   <p>${esc(name)} provides genuine digital subscriptions and social services at honest prices, backed by fast activation and attentive support.</p>
   <div class="cta"><a class="btn gold" href="#services">View Services</a><a class="btn ghost" target="_blank" rel="noopener" href="${chat}">${WAI}Chat on WhatsApp</a></div></div>
   <div class="strip"><div class="w"><div>${ICO.shield}<span><b>Genuine Service</b>Clear plans, no hidden charges</span></div><div>${ICO.bolt}<span><b>Fast Activation</b>Order today, start quickly</span></div><div>${ICO.chat}<span><b>Direct Support</b>Real people on WhatsApp</span></div></div></div></header>
- <section class="s" id="services"><div class="w"><div class="head"><div class="eyebrow">Our Services</div><h2>Select the plan that suits you</h2><p>Every service is clearly priced. Choose a plan and place your order directly on WhatsApp.</p></div>
+ <section class="s" id="services"><div class="w"><div class="head"><div class="eyebrow">Our Services</div><h2>Select the plan that suits you</h2><p>Every service is clearly priced. Choose a plan, pay by bank transfer and track your order right here.</p></div>
   ${cats.length>2?`<div class="chips">${cats.map(c=>`<button class="chip ${c===cat?'on':''}" data-cat="${esc(c)}">${esc(c)}</button>`).join('')}</div>`:''}
   ${list.length?`<div class="grid">${list.map(p=>{const l=wa(`Hello ${name}, I would like to order: ${p.name}${p.duration?' ('+p.duration+')':''} - ${money(p.price).replace(/&amp;/g,'&')}`);
   return `<article class="card">${p.badge?`<span class="bdg">${esc(p.badge)}</span>`:''}<div class="im">${p.image?`<img loading="lazy" src="${esc(p.image)}" alt="${esc(p.name)}">`:esc((p.name||'?')[0])}</div>
   <div class="bd">${p.category?`<div class="cat">${esc(p.category)}</div>`:''}<h3>${esc(p.name)}</h3>
   <ul>${(p.features||'').split('\n').filter(x=>x.trim()).map(x=>`<li>${esc(x)}</li>`).join('')}</ul>
   <div class="pr"><b>${money(p.price)}</b>${p.old_price?`<s>${money(p.old_price)}</s>`:''}${p.duration?`<small>/ ${esc(p.duration)}</small>`:''}</div>
-  <a class="btn wa ${p.in_stock===false?'off':''}" target="_blank" rel="noopener" href="${l}">${p.in_stock===false?'Currently Unavailable':WAI+'Order on WhatsApp'}</a></div></article>`}).join('')}</div>`
+  <button class="btn buy ${p.in_stock===false?'off':''}" data-buy="${esc(p.id)}">${p.in_stock===false?'Currently Unavailable':'Buy Now'}</button></div></article>`}).join('')}</div>`
   :`<div class="empty"><h3>Our catalogue is being updated</h3><p>Please check back shortly, or contact us on WhatsApp for current availability.</p></div>`}
  </div></section>
+ <section class="s" id="orders" style="padding-top:0"><div class="w"><div class="head" style="margin-bottom:34px"><div class="eyebrow">My Orders</div><h2>Your subscriptions</h2><p>Track your payments and plans here. The status updates automatically once our team confirms your payment.</p></div><div class="olist" id="ol"><div class="od"><div class="odm" style="margin:0">Loading your orders...</div></div></div></div></section>
  <section class="s alt" id="about"><div class="w"><div class="about"><div><div class="eyebrow" style="color:var(--g5)">About Us</div><h2>A reliable partner for your digital needs</h2>
   <p>${esc(name)} was created with a simple principle: people deserve genuine digital services at fair prices, with honest communication at every step.</p>
   <p>From selection to activation, our team keeps the process clear, quick and respectful of your time.</p><a class="btn" href="#process">How it works</a></div>
   <div class="pano">${st.hero_image?'':banner()}${st.hero_image?`<img src="${esc(st.hero_image)}" alt="" style="width:100%;height:100%;object-fit:cover">`:''}</div></div>
   <div class="cols" style="margin-top:80px"><div class="col"><span class="no">01</span><h3>Trusted and Secure</h3><p>Transparent pricing and honest dealing from the first message to final delivery.</p></div><div class="col"><span class="no">02</span><h3>Prompt Delivery</h3><p>Efficient processing so you can begin using your service without unnecessary delay.</p></div><div class="col"><span class="no">03</span><h3>Attentive Support</h3><p>Reach us on WhatsApp before and after purchase. We are always glad to help.</p></div></div></div></section>
  <section class="s" id="process"><div class="w"><div class="head"><div class="eyebrow">Process</div><h2>Three simple steps</h2><p>A straightforward experience from first choice to activation.</p></div>
-  <div class="cols"><div class="col"><span class="no">STEP 01</span><h3>Choose</h3><p>Browse our services and select the plan that fits your needs.</p></div><div class="col"><span class="no">STEP 02</span><h3>Order</h3><p>Press the order button and your details open directly in WhatsApp.</p></div><div class="col"><span class="no">STEP 03</span><h3>Activate</h3><p>Complete payment as guided by our team and receive your service.</p></div></div></div></section>
+  <div class="cols"><div class="col"><span class="no">STEP 01</span><h3>Choose</h3><p>Browse our services and select the plan that fits your needs.</p></div><div class="col"><span class="no">STEP 02</span><h3>Order</h3><p>Press Buy Now, pay to one of our accounts and upload your payment proof.</p></div><div class="col"><span class="no">STEP 03</span><h3>Activate</h3><p>Our team verifies your payment and activates your plan. The status updates here automatically.</p></div></div></div></section>
  <section class="s alt" id="faq"><div class="w"><div class="head"><div class="eyebrow">FAQ</div><h2>Frequently asked questions</h2></div>
-  <details><summary>How do I place an order?</summary><p>Select a service and press the order button. WhatsApp opens with your order details ready to send.</p></details>
-  <details><summary>How long does activation take?</summary><p>Orders are processed promptly after payment confirmation. Our team will keep you informed.</p></details>
-  <details><summary>Which payment methods do you accept?</summary><p>Our team will share the available payment options with you on WhatsApp when you place your order.</p></details>
+  <details><summary>How do I place an order?</summary><p>Select a service and press Buy Now. Pay to one of our accounts, then submit your details with the Transaction ID and a payment screenshot.</p></details>
+  <details><summary>How long does activation take?</summary><p>Your plan is activated as soon as our team verifies your payment. You can follow the status under My Orders.</p></details>
+  <details><summary>Which payment methods do you accept?</summary><p>We accept Easypaisa, Askari Bank and NayaPay transfers. The account details are shown when you press Buy Now.</p></details>
   <details><summary>What if I need help after purchase?</summary><p>Message us any time on WhatsApp and our support team will assist you.</p></details></div></section>
  <section class="s" id="report"><div class="w"><div class="head"><div class="eyebrow">Complaints &amp; Reports</div><h2>Tell us what went wrong</h2><p>Your report is sent straight to our team on WhatsApp together with your name and email.</p></div>
   <div class="rp"><form class="fm" id="rf" novalidate><div class="msg" id="rm"></div>
@@ -328,10 +364,10 @@ function site(){
   <div class="hist"><h3>Your recent reports</h3><p>Reports sent from this account on this device.</p><div id="hl"></div></div></div></div></section>
  <section class="band"><div class="w"><h2>Ready when you are</h2><p>Speak with our team on WhatsApp and we will help you choose the right service.</p><a class="btn gold" target="_blank" rel="noopener" href="${chat}">${WAI}Chat on WhatsApp</a></div></section>
  <footer><div class="w"><div class="g"><div><a class="logo" href="#home">${logoImg()}<span class="n" style="color:#fff">${esc(name)}</span></a><p>${esc(st.tagline||'Premium digital subscriptions and social services.')}</p><div class="fsoc"><h4>Follow us</h4><div class="soc"><a class="fb" target="_blank" rel="noopener" href="https://www.facebook.com/share/1Ju6fzmejh/?mibextid=wwXIfr" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M13.5 22v-8.2h2.8l.5-3.3h-3.3V8.4c0-.9.4-1.7 1.8-1.7h1.6V3.8s-1.4-.3-2.800-.3c-2.800 0-4.500 1.700-4.500 4.700v2.300H6.700v3.300h2.900V22z"/></svg>Facebook</a><a class="ig" target="_blank" rel="noopener" href="https://www.instagram.com/socialservice.pak?psln=MTdwd2xsYXNxYWx2NQ%3D%3D&amp;utm_source=qr" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M7.500 2h9A5.500 5.500 0 0 1 22 7.500v9a5.500 5.500 0 0 1-5.500 5.500h-9A5.500 5.500 0 0 1 2 16.500v-9A5.500 5.500 0 0 1 7.500 2zm0 2A3.500 3.500 0 0 0 4 7.500v9A3.500 3.500 0 0 0 7.500 20h9a3.500 3.500 0 0 0 3.500-3.500v-9A3.500 3.500 0 0 0 16.500 4zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.300-3.400a1.200 1.200 0 1 1 0 2.400 1.200 1.200 0 0 1 0-2.400z"/></svg>Instagram</a><a class="wc" target="_blank" rel="noopener" href="https://whatsapp.com/channel/0029Vb85bta6xCSO5OKLzy3s" aria-label="WhatsApp Channel"><svg viewBox="0 0 24 24"><path d="M3 10.500v3a1.500 1.500 0 0 0 1.500 1.500H6l1 4.500h2.200L8.300 15H10l7 4V5l-7 4H4.500A1.500 1.500 0 0 0 3 10.500zm15.500-1.800v6.600a3.300 3.300 0 0 0 0-6.600zM20 5.300v1.900a6 6 0 0 1 0 9.600v1.900a8 8 0 0 0 0-13.400z"/></svg>WhatsApp Channel</a><a class="wm" target="_blank" rel="noopener" href="https://chat.whatsapp.com/DLFdQd5RKmt2gFWiCL8Od5" aria-label="WhatsApp Community"><svg viewBox="0 0 24 24"><path d="M9 11a3.500 3.500 0 1 0 0-7 3.500 3.500 0 0 0 0 7zm7 .5a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM9 13c-3 0-7 1.500-7 4.500V20h14v-2.500C16 14.500 12 13 9 13zm7.300.1c.4 0 .7-.1 1-.1 2.700 0 5.700 1.300 5.700 4v3h-5v-2.500c0-1.800-.7-3.200-1.700-4.400z"/></svg>WhatsApp Community</a></div></div></div>
-  <div><h4>Navigate</h4><a href="#services">Services</a><a href="#about">About</a><a href="#process">Process</a><a href="#faq">FAQ</a><a href="#report">Complaints &amp; Reports</a></div>
+  <div><h4>Navigate</h4><a href="#services">Services</a><a href="#orders">My Orders</a><a href="#about">About</a><a href="#process">Process</a><a href="#faq">FAQ</a><a href="#report">Complaints &amp; Reports</a></div>
   <div><h4>Contact</h4>${st.phone?`<a href="tel:${esc(st.phone)}">${esc(st.phone)}</a>`:''}${st.email?`<a href="mailto:${esc(st.email)}">${esc(st.email)}</a>`:''}<a target="_blank" rel="noopener" href="${chat}">WhatsApp</a></div></div>
   <div class="copy"><span>&copy; ${new Date().getFullYear()} ${esc(name)}. All rights reserved.</span><span>Premium digital services</span></div></div></footer>`;
- initReport();$('#lo').onclick=confirmLogout;document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{cat=b.dataset.cat;site();document.getElementById('services').scrollIntoView()});
+ initReport();initOrders();document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const p=D.products.find(x=>x.id===b.dataset.buy);if(p)payModal(p)});$('#lo').onclick=confirmLogout;document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{cat=b.dataset.cat;site();document.getElementById('services').scrollIntoView()});
  $('#ham').onclick=()=>$('#menu').classList.toggle('open');
  document.querySelectorAll('#menu a.l').forEach(a=>a.addEventListener('click',()=>$('#menu').classList.remove('open')));
 }
@@ -436,6 +472,71 @@ function initReport(){
  };
 }
 function boot2(){ME=currentUser();if(ME)site();else authView('signup')}
+/* ===== PAYMENTS + ORDERS ===== */
+const PAY=[
+ {name:'Easypaisa',holder:'Muhammad Kamil Zafar',lbl:'Number',num:'03335822312',iban:'PK65TMFB0000000091602087'},
+ {name:'Askari Bank',holder:'Muhammad Kamil Zafar',lbl:'Account',num:'01153230003919',iban:'PK27ASCM0001153230003919'},
+ {name:'NayaPay',holder:'Muhammad Kamil Zafar',lbl:'Account',num:'03005591403',iban:'PK46NAYA1234503005591403'}];
+const ST={waiting:['Waiting for approval','w'],active:['Active','a'],rejected:['Rejected','r']};
+const fdate=t=>new Date(t).toLocaleString('en-GB',{day:'2-digit',month:'short',year:'numeric',hour:'2-digit',minute:'2-digit'});
+async function oapi(method,o){o=o||{};
+ const r=await fetch('/api/orders'+(o.q||''),{method,headers:{'Content-Type':'application/json','x-admin-password':o.admin?ADM:''},body:method==='GET'?undefined:JSON.stringify(o.body||{}),cache:'no-store'});
+ let j={};try{j=await r.json()}catch(e){}
+ if(!r.ok){const e=new Error(j.error||('Error '+r.status));e.status=r.status;throw e}
+ return j}
+function copyTxt(t,b){const done=()=>{const o=b.textContent;b.textContent='Copied';setTimeout(()=>{b.textContent=o},1400)};
+ const fb=()=>{const x=document.createElement('textarea');x.value=t;x.style.cssText='position:fixed;opacity:0';document.body.appendChild(x);x.select();try{document.execCommand('copy');done()}catch(e){}x.remove()};
+ if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(t).then(done,fb);else fb()}
+function sheet(cls,html){closeUi();const d=document.createElement('div');d.className='md';d.id='md';
+ d.innerHTML=`<div class="mc ${cls}" role="dialog" aria-modal="true">${html}</div>`;
+ d.onclick=e=>{if(e.target===d||(e.target.dataset&&e.target.dataset.x==='c'))closeUi()};
+ document.body.appendChild(d);document.body.style.overflow='hidden';document.addEventListener('keydown',escUi);return d}
+function payModal(p){
+ const d=sheet('pay',`<button class="x" data-x="c" aria-label="Close" type="button">&times;</button><h3>Complete your order</h3>
+ <p>Send the payment to any account below, then fill in your details and upload the payment screenshot.</p>
+ <div class="sum"><span><b>${esc(p.name)}</b>${p.duration?'<small>'+esc(p.duration)+'</small>':''}</span><strong>${money(p.price)}</strong></div>
+ <div class="pyh">1. Pay to any account</div>
+ ${PAY.map(a=>`<div class="pyacc"><b>${a.name}</b><span>${a.holder}</span>
+  <div class="pyrow"><small>${a.lbl}</small><code>${a.num}</code><button type="button" class="cp" data-c="${a.num}">Copy</button></div>
+  <div class="pyrow"><small>IBAN</small><code>${a.iban}</code><button type="button" class="cp" data-c="${a.iban}">Copy</button></div></div>`).join('')}
+ <div class="pyh">2. Submit your payment details</div>
+ <form id="of" novalidate><div class="msg" id="om"></div>
+  <div class="r2"><div class="f"><label for="on">Your name</label><input id="on" maxlength="80" autocomplete="name" value="${esc(ME.name)}"></div>
+  <div class="f"><label for="oe">Your email</label><input id="oe" type="email" maxlength="120" autocomplete="email" value="${esc(ME.email)}"></div></div>
+  <div class="r2"><div class="f"><label for="ow">Your WhatsApp number</label><input id="ow" type="tel" inputmode="tel" maxlength="20" placeholder="03XX XXXXXXX" value="${esc(LS.get('ssp_wa_'+ME.email,''))}"></div>
+  <div class="f"><label for="om2">Paid via</label><select id="om2">${PAY.map(a=>`<option>${a.name}</option>`).join('')}</select></div></div>
+  <div class="f"><label for="ot">Transaction ID</label><input id="ot" maxlength="40" autocomplete="off" placeholder="Transaction ID from your payment receipt"></div>
+  <div class="f"><label for="os">Payment screenshot</label><img class="shot" id="osp" alt=""><input id="os" type="file" accept="image/*"><p class="hint">Upload a clear screenshot of your successful payment.</p></div>
+  <button class="btn gold" type="submit" id="osb">Submit payment</button></form>`);
+ d.querySelectorAll('.cp').forEach(b=>b.onclick=()=>copyTxt(b.dataset.c,b));
+ $('#os').onchange=e=>{const x=e.target.files[0],v=$('#osp');if(x){v.src=URL.createObjectURL(x);v.style.display='block'}else v.style.display='none'};
+ const msg=t=>{const m=$('#om');m.className='msg err';m.textContent=t;m.scrollIntoView({block:'nearest'})};
+ $('#of').onsubmit=async ev=>{ev.preventDefault();
+  const name=$('#on').value.trim(),email=normEmail($('#oe').value),wa=$('#ow').value.replace(/\D/g,''),tx=$('#ot').value.trim(),file=$('#os').files[0];
+  if(name.length<2)return msg('Please enter your name.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email))return msg('Please enter a valid email address.');
+  if(wa.length<10||wa.length>15)return msg('Please enter a valid WhatsApp number.');
+  if(tx.length<6)return msg('Please enter the Transaction ID from your payment receipt.');
+  if(!file)return msg('Please upload your payment screenshot.');
+  const b=$('#osb');b.disabled=true;b.textContent='Submitting...';
+  try{const shot=await shrink(file,1000,380000);
+   await oapi('POST',{body:{action:'create',order:{product:p.name,duration:p.duration||'',price:p.price,name,email,whatsapp:wa,method:$('#om2').value,txid:tx,screenshot:shot}}});
+   LS.set('ssp_wa_'+ME.email,$('#ow').value.trim());closeUi();
+   ui({title:'Payment submitted',text:'Your order is now waiting for approval. Once our team confirms your payment, its status under My Orders changes to Active automatically.',icon:'success',cancel:null,ok:'View my orders',onOk:()=>{loadMyOrders();const o=$('#orders');o&&o.scrollIntoView()}});
+   loadMyOrders(true)
+  }catch(e){b.disabled=false;b.textContent='Submit payment';msg(e.message==='storage-not-connected'?'Orders are not available yet. Please contact us on WhatsApp.':(e.message||'Something went wrong. Please try again.'))}}}
+let ordT=null,ordPrev={};
+function initOrders(){loadMyOrders();clearInterval(ordT);ordT=setInterval(()=>{if($('#ol')&&ME)loadMyOrders(true);else clearInterval(ordT)},20000)}
+async function loadMyOrders(quiet){const box=$('#ol');if(!box||!ME)return;
+ try{const j=await oapi('GET',{q:'?email='+encodeURIComponent(ME.email)});const list=j.orders||[];
+  list.forEach(o=>{if(ordPrev[o.id]&&ordPrev[o.id]!==o.status&&o.status==='active')toast('Your '+o.product+' plan is now active.','success');ordPrev[o.id]=o.status});
+  const b2=$('#ol');if(!b2)return;
+  b2.innerHTML=list.length?list.map(o=>{const s=ST[o.status]||ST.waiting;
+   return `<div class="od"><div class="odh"><b>${esc(o.product)}</b><span class="stt ${s[1]}">${s[0]}</span></div>
+   <div class="odm">${money(o.price)}${o.duration?' \u00b7 '+esc(o.duration):''} \u00b7 ${fdate(o.t)} \u00b7 ${esc(o.id)}</div>
+   <p>${o.status==='active'?'Your plan is active. Thank you for choosing us.':o.status==='rejected'?'We could not verify this payment. Please contact us on WhatsApp.':'Waiting for our team to verify your payment.'}</p></div>`}).join('')
+  :'<div class="od"><div class="odm" style="margin:0;text-align:center">You have no orders yet. Choose a service above and press Buy Now to get started.</div></div>'
+ }catch(e){if(!quiet)box.innerHTML='<div class="od"><div class="odm" style="margin:0">Your orders could not be loaded right now. Please try again shortly.</div></div>'}}
 /* ===== ADMIN PANEL (owner only, open with  yoursite/#admin) ===== */
 let inAdmin=false,ADM='';
 try{ADM=sessionStorage.getItem('adm')||''}catch(e){}
@@ -462,7 +563,7 @@ async function adminView(){
 
 function adminLogin(){
  adminShell(`<main class="auf" style="min-height:100vh"><form class="af" id="alf" novalidate><div class="bl" style="display:flex;align-items:center;gap:14px;margin-bottom:30px">${logoImg()}<b style="font:700 22px 'Playfair Display',serif;color:#f1f6ff">Admin Access</b></div>
- <h2>Owner login</h2><p class="sub">Enter your admin password to manage products.</p><div class="msg" id="msg"></div>
+ <h2>Owner login</h2><p class="sub">Enter your admin password to manage orders and products.</p><div class="msg" id="msg"></div>
  <div class="f"><label for="ap">Password</label><div class="pw"><input id="ap" type="password" autocomplete="current-password" placeholder="Admin password"><button type="button" id="ash">Show</button></div></div>
  <button class="btn gold" id="asb" type="submit">Sign In</button><div class="alt2"><a href="#">Back to website</a></div></form></main>`);
  $('#ash').onclick=()=>{const i=$('#ap'),s=i.type==='password';i.type=s?'text':'password';$('#ash').textContent=s?'Hide':'Show'};
@@ -472,7 +573,9 @@ function adminLogin(){
 
 function adminPanel(){
  adminShell(`<div class="adm"><header class="ah"><div class="bl2">${logoImg()}<span>Admin Panel</span></div><div style="display:flex;gap:10px"><a class="btn out sm" href="#">View website</a><button class="btn out sm" id="alo">Log out</button></div></header>
- <div class="ag"><section class="fm"><h3 id="pt">Add product</h3><form id="pf" novalidate>
+ <div class="tabs"><button class="tb on" data-t="o" type="button">Orders <i id="pcn"></i></button><button class="tb" data-t="p" type="button">Products</button></div>
+ <div id="to"><div class="ofl" id="ofl"></div><div class="oal" id="oal"><p class="note">Loading orders...</p></div></div>
+ <div class="ag" id="tp" style="display:none"><section class="fm"><h3 id="pt">Add product</h3><form id="pf" novalidate>
   <div class="f"><label for="pn">Product name</label><input id="pn" maxlength="80" placeholder="e.g. Netflix Premium"></div>
   <div class="r2"><div class="f"><label for="pc">Category</label><input id="pc" maxlength="40" placeholder="e.g. Streaming"></div><div class="f"><label for="pd">Duration</label><input id="pd" maxlength="40" placeholder="e.g. 1 month"></div></div>
   <div class="r2"><div class="f"><label for="pp">Price</label><input id="pp" type="number" inputmode="decimal" min="0" placeholder="500"></div><div class="f"><label for="po">Old price (optional)</label><input id="po" type="number" inputmode="decimal" min="0" placeholder="800"></div></div>
@@ -498,8 +601,36 @@ function adminPanel(){
    await api('POST',{product:{name,category:$('#pc').value,duration:$('#pd').value,price,old_price:$('#po').value,badge:$('#pb').value,features:$('#pf2').value,image,in_stock:$('#pst').checked}});
    await loadData();draw();reset();toast('Published. Your website is updated.','success')
   }catch(e){toast(apiErr(e),'error')}finally{b.disabled=false}};
- draw()}
+ draw();adminOrders()}
 
+let aF='waiting',aO=[],aT=null;
+function adminOrders(){
+ document.querySelectorAll('.tb').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tb').forEach(x=>x.classList.toggle('on',x===b));$('#to').style.display=b.dataset.t==='o'?'block':'none';$('#tp').style.display=b.dataset.t==='p'?'grid':'none'});
+ refreshAO();clearInterval(aT);aT=setInterval(()=>{if($('#oal'))refreshAO(true);else clearInterval(aT)},30000)}
+async function refreshAO(quiet){try{const j=await oapi('GET',{admin:1,q:'?all=1'});aO=j.orders||[];drawAO()}
+ catch(e){if(!quiet&&$('#oal'))$('#oal').innerHTML='<p class="note">'+esc(apiErr(e))+'</p>'}}
+function drawAO(){if(!$('#oal'))return;
+ const cnt=k=>aO.filter(o=>o.status===k).length;$('#pcn').textContent=cnt('waiting')||'';
+ const tabs=[['waiting','Waiting'],['active','Active'],['rejected','Rejected'],['all','All']];
+ $('#ofl').innerHTML=tabs.map(t=>`<button class="chip ${aF===t[0]?'on':''}" data-f="${t[0]}" type="button">${t[1]} (${t[0]==='all'?aO.length:cnt(t[0])})</button>`).join('');
+ document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{aF=b.dataset.f;drawAO()});
+ const list=aO.filter(o=>aF==='all'||o.status===aF).sort((a,b)=>b.t-a.t);
+ $('#oal').innerHTML=list.length?list.map(o=>{const s=ST[o.status]||ST.waiting;
+  const acts=(o.status!=='active'?`<button class="btn gold sm" data-a="active" data-id="${esc(o.id)}">Approve</button>`:'')+(o.status==='waiting'?`<button class="btn out sm" data-a="rejected" data-id="${esc(o.id)}">Reject</button>`:'')+(o.status!=='waiting'?`<button class="btn out sm" data-a="waiting" data-id="${esc(o.id)}">Move to waiting</button>`:'')+`<button class="btn out sm" data-a="del" data-id="${esc(o.id)}">Delete</button>`;
+  return `<div class="ao"><div class="aoh"><b>${esc(o.product)}</b><span class="stt ${s[1]}">${s[0]}</span></div>
+  <div class="aom">${money(o.price)}${o.duration?' \u00b7 '+esc(o.duration):''} \u00b7 ${fdate(o.t)} \u00b7 ${esc(o.id)}</div>
+  <div class="mdt"><div><b>Name</b><span>${esc(o.name)}</span></div><div><b>Email</b><span>${esc(o.email)}</span></div><div><b>WhatsApp</b><span><a target="_blank" rel="noopener" href="https://wa.me/${esc(o.whatsapp)}">${esc(o.whatsapp)}</a></span></div><div><b>Paid via</b><span>${esc(o.method)}</span></div><div><b>Txn ID</b><span>${esc(o.txid)}</span></div></div>
+  <div class="aob"><button class="btn out sm" data-sh="${esc(o.id)}">View screenshot</button>${acts}</div></div>`}).join('')
+  :'<p class="note">No orders in this list.</p>';
+ document.querySelectorAll('[data-sh]').forEach(b=>b.onclick=async()=>{b.disabled=true;
+  try{const j=await oapi('GET',{admin:1,q:'?shot='+encodeURIComponent(b.dataset.sh)});
+   sheet('',`<h3>Payment screenshot</h3><img class="shotimg" alt="Payment screenshot" src="${esc(j.shot||'')}"><div class="mb"><button class="btn gold sm" data-x="c" type="button">Close</button></div>`)}
+  catch(e){toast(apiErr(e),'error')}finally{b.disabled=false}});
+ document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{const o=aO.find(x=>x.id===b.dataset.id);if(!o)return;const a=b.dataset.a;
+  const T={active:['Approve this order?','The plan will be marked Active and the customer will see it instantly.','Approve'],rejected:['Reject this order?','The customer will see this payment as Rejected.','Reject'],waiting:['Move back to waiting?','The order returns to the waiting list.','Move'],del:['Delete this order?','This permanently removes the order and its screenshot.','Delete']}[a];
+  ui({title:T[0],text:T[1],rows:[['Order',o.id],['Customer',o.name],['Plan',o.product],['Txn ID',o.txid]],ok:T[2],icon:a==='del'?'warn':'info',onOk:async()=>{
+   try{if(a==='del')await oapi('DELETE',{admin:1,body:{id:o.id}});else await oapi('POST',{admin:1,body:{action:'status',id:o.id,status:a}});
+    await refreshAO(true);toast(a==='del'?'Order deleted.':'Order updated.','success')}catch(e){toast(apiErr(e),'error')}}})})}
 window.addEventListener('hashchange',()=>{if(location.hash==='#admin'&&!inAdmin)adminView();else if(inAdmin&&location.hash!=='#admin'){inAdmin=false;boot2()}});
 async function boot(){await loadData();if(location.hash==='#admin')adminView();else boot2()}
 boot();
