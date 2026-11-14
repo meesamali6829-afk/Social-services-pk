@@ -19,12 +19,29 @@ async function rc(cmd) {
   return j.result;
 }
 
-function isAdmin(req) {
-  const pw = process.env.ADMIN_PASSWORD || '';
+// Admin check: works with whatever password variable products.js uses.
+// 1) common env variable names, 2) otherwise ask /api/products to verify the same password.
+async function isAdmin(req) {
   const h = String(req.headers['x-admin-password'] || '');
-  if (!pw || !h) return false;
-  const a = Buffer.from(h), b = Buffer.from(pw);
-  return a.length === b.length && crypto.timingSafeEqual(a, b);
+  if (!h) return false;
+  const names = ['ADMIN_PASSWORD', 'ADMIN_PASS', 'ADMIN_KEY', 'ADMIN_SECRET', 'PASSWORD'];
+  for (const n of names) {
+    const pw = process.env[n];
+    if (pw) {
+      const a = Buffer.from(h), b = Buffer.from(pw);
+      if (a.length === b.length && crypto.timingSafeEqual(a, b)) return true;
+    }
+  }
+  try {
+    const host = req.headers['x-forwarded-host'] || req.headers.host;
+    const proto = String(req.headers['x-forwarded-proto'] || 'https').split(',')[0];
+    const r = await fetch(proto + '://' + host + '/api/products', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-admin-password': h },
+      body: JSON.stringify({ action: 'login' })
+    });
+    return r.ok;
+  } catch (e) { return false; }
 }
 
 const clean = (v, n) => String(v == null ? '' : v).replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, n);
@@ -41,12 +58,12 @@ module.exports = async (req, res) => {
 
     if (req.method === 'GET') {
       if (q.shot) {
-        if (!isAdmin(req)) return send(401, { error: 'Unauthorized' });
+        if (!(await isAdmin(req))) return send(401, { error: 'Unauthorized' });
         const shot = await rc(['GET', 'ssp:shot:' + clean(q.shot, 40)]);
         return send(200, { shot: shot || '' });
       }
       if (q.all) {
-        if (!isAdmin(req)) return send(401, { error: 'Unauthorized' });
+        if (!(await isAdmin(req))) return send(401, { error: 'Unauthorized' });
         const list = (await all()).sort((a, b) => b.t - a.t);
         return send(200, { orders: list });
       }
@@ -92,7 +109,7 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'POST' && body.action === 'status') {
-      if (!isAdmin(req)) return send(401, { error: 'Unauthorized' });
+      if (!(await isAdmin(req))) return send(401, { error: 'Unauthorized' });
       const id = clean(body.id, 40);
       if (!STATUSES.includes(body.status)) return send(400, { error: 'Invalid status' });
       const raw = await rc(['HGET', 'ssp:orders', id]);
@@ -104,7 +121,7 @@ module.exports = async (req, res) => {
     }
 
     if (req.method === 'DELETE') {
-      if (!isAdmin(req)) return send(401, { error: 'Unauthorized' });
+      if (!(await isAdmin(req))) return send(401, { error: 'Unauthorized' });
       const id = clean(body.id, 40);
       await rc(['HDEL', 'ssp:orders', id]);
       await rc(['DEL', 'ssp:shot:' + id]);
