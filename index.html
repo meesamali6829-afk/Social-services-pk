@@ -605,13 +605,21 @@ function adminPanel(){
   <div class="f"><label for="pf2">Features (one per line)</label><textarea id="pf2" maxlength="800" placeholder="Full HD quality&#10;Private profile"></textarea></div>
   <div class="f"><label for="pi">Product image</label><img class="pv" id="pv" alt=""><input id="pi" type="file" accept="image/*"></div>
   <label class="ck"><input type="checkbox" id="pst" checked> In stock</label>
-  <div style="display:flex;gap:10px"><button class="btn gold" id="psb" type="submit" style="flex:1">Publish product</button></div></form></section>
+  <div style="display:flex;gap:10px"><button class="btn gold" id="psb" type="submit" style="flex:1">Publish product</button><button class="btn out" id="pcx" type="button" style="display:none">Cancel</button></div></form></section>
  <section class="fm"><h3>Your products</h3><div id="pl"></div></section>
 </div></div>`);
- const reset=()=>{$('#pf').reset();$('#pst').checked=true;$('#pv').style.display='none'};
- const draw=()=>{const cur=esc((D.settings||{}).currency||'Rs.');$('#pl').innerHTML=D.products.length?D.products.map(p=>`<div class="pi">${pimg(p)?`<img src="${esc(pimg(p))}" alt="">`:'<i></i>'}<div><b>${esc(p.name)}</b><span>${cur} ${esc(p.price)}${p.duration?' \u00b7 '+esc(p.duration):''}${p.in_stock===false?' \u00b7 Out of stock':''}</span></div><button class="btn out sm" data-d="${esc(p.id)}">Delete</button></div>`).join(''):'<p class="note">No products yet. Add your first product on the left.</p>';
+ let edId=null;
+ const exitEdit=()=>{edId=null;$('#pt').textContent='Add product';$('#psb').textContent='Publish product';$('#pcx').style.display='none'};
+ const reset=()=>{$('#pf').reset();$('#pst').checked=true;$('#pv').style.display='none';exitEdit()};
+ const startEdit=id=>{const p=D.products.find(x=>x.id===id);if(!p)return;edId=id;
+  $('#pf').reset();$('#pn').value=p.name||'';$('#pc').value=p.category||'';$('#pd').value=p.duration||'';$('#pp').value=p.price==null?'':p.price;$('#po').value=p.old_price||'';$('#pb').value=p.badge||'';$('#pf2').value=p.features||'';$('#pst').checked=p.in_stock!==false;
+  const im=pimg(p);if(im){$('#pv').src=im;$('#pv').style.display='block'}else $('#pv').style.display='none';
+  $('#pt').textContent='Edit product';$('#psb').textContent='Save changes';$('#pcx').style.display='inline-flex';$('#pt').scrollIntoView({behavior:'smooth',block:'start'});toast('Editing "'+(p.name||'product')+'". Change what you need, then press Save changes.')};
+ const draw=()=>{const cur=esc((D.settings||{}).currency||'Rs.');$('#pl').innerHTML=D.products.length?D.products.map(p=>`<div class="pi">${pimg(p)?`<img src="${esc(pimg(p))}" alt="">`:'<i></i>'}<div><b>${esc(p.name)}</b><span>${cur} ${esc(p.price)}${p.duration?' \u00b7 '+esc(p.duration):''}${p.in_stock===false?' \u00b7 Out of stock':''}</span></div><button class="btn out sm" data-e="${esc(p.id)}">Edit</button><button class="btn out sm" data-d="${esc(p.id)}">Delete</button></div>`).join(''):'<p class="note">No products yet. Add your first product on the left.</p>';
   document.querySelectorAll('[data-d]').forEach(b=>b.onclick=()=>{const p=D.products.find(x=>x.id===b.dataset.d);if(!p)return;
    ui({title:'Delete product?',text:'"'+p.name+'" will be removed from your website.',ok:'Delete',icon:'warn',onOk:async()=>{try{await api('DELETE',{id:p.id});await loadData();draw();toast('Product deleted.','success')}catch(e){toast(apiErr(e),'error')}}})})};
+ $('#pl').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-e]');if(b)startEdit(b.dataset.e)};
+ $('#pcx').onclick=reset;
  $('#pi').onchange=e=>{const x=e.target.files[0];if(x){$('#pv').src=URL.createObjectURL(x);$('#pv').style.display='block'}};
  $('#alo').onclick=()=>{ADM='';try{sessionStorage.removeItem('adm')}catch(e){}adminLogin()};
  $('#pf').onsubmit=async ev=>{ev.preventDefault();
@@ -620,8 +628,16 @@ function adminPanel(){
   if(!isFinite(price)||price<0)return toast('Please enter a valid price.','error');
   const b=$('#psb');b.disabled=true;
   try{let image='';const file=$('#pi').files[0];if(file)image=await shrink(file,900,400000);
-   await api('POST',{product:{name,category:$('#pc').value,duration:$('#pd').value,price,old_price:$('#po').value,badge:$('#pb').value,features:$('#pf2').value,image,in_stock:$('#pst').checked}});
-   await loadData();draw();reset();toast('Published. Your website is updated.','success')
+   const prod={name,category:$('#pc').value,duration:$('#pd').value,price,old_price:$('#po').value,badge:$('#pb').value,features:$('#pf2').value,image,in_stock:$('#pst').checked};
+   if(edId){const old=D.products.find(x=>x.id===edId);if(!old)throw new Error('This product could not be found. Please refresh the page.');
+    if(!file)prod.image=old.image||'';
+    const before=new Set(D.products.map(x=>x.id)),sig=x=>JSON.stringify([x.name,Number(x.price),String(x.old_price||''),x.category||'',x.duration||'',x.badge||'',x.features||'',x.image||'',x.in_stock!==false]);
+    await api('POST',{product:Object.assign({},prod,{id:old.id,t:old.t})});await loadData();
+    const added=D.products.filter(x=>!before.has(x.id)),cur=D.products.find(x=>x.id===old.id);
+    if(added.length){await api('DELETE',{id:old.id});await loadData()}
+    else if(!cur||sig(cur)!==sig(prod)){await api('POST',{product:prod});await loadData();await api('DELETE',{id:old.id});await loadData()}
+    draw();reset();toast('Product updated. Your website now shows the new details.','success')
+   }else{await api('POST',{product:prod});await loadData();draw();reset();toast('Published. Your website is updated.','success')}
   }catch(e){toast(apiErr(e),'error')}finally{b.disabled=false}};
  draw();adminOrders()}
 
