@@ -274,6 +274,30 @@ footer .soc a.wc:hover,footer .soc a.wm:hover{background:#1f9d57}
 .pv{max-width:100%;max-height:150px;border-radius:8px;margin:0 0 14px;display:none}
 .note{color:var(--mut);font-size:14px;line-height:1.7}.note code{color:var(--gold2)}
 @media(max-width:900px){.ag{grid-template-columns:1fr}.r2{grid-template-columns:1fr}}
+/* reviews */
+.rvg{columns:4 240px;column-gap:22px}
+.rvc{break-inside:avoid;margin:0 0 22px;background:#fff;border:1px solid var(--bd);border-radius:10px;padding:10px;cursor:zoom-in;transition:.3s;position:relative;display:block;width:100%;text-align:left}
+.rvc:hover{transform:translateY(-5px);box-shadow:0 22px 44px rgba(29,78,216,.15);border-color:var(--g5)}
+.rvc img{width:100%;height:auto;display:block;border-radius:6px;background:var(--alt);min-height:120px}
+.rvc .vb{display:flex;align-items:center;gap:7px;margin-top:10px;font:600 11.5px Inter,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--g7)}
+.rvc .vb svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.rvt{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin:-24px 0 44px}
+.rvt div{background:#fff;border:1px solid var(--bd);border-radius:99px;padding:9px 20px;font:600 12.5px Inter,sans-serif;color:var(--g8);letter-spacing:.04em}
+.rvt b{color:var(--g6)}
+.lb{position:fixed;inset:0;z-index:100;background:rgba(5,14,38,.92);display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(6px)}
+.lb img{max-width:min(94vw,560px);max-height:88vh;border-radius:10px;box-shadow:0 30px 80px rgba(0,0,0,.5);background:#fff}
+.lb button{position:absolute;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.3);color:#fff;width:46px;height:46px;border-radius:50%;font-size:24px;line-height:1;cursor:pointer;transition:.2s}
+.lb button:hover{background:rgba(255,255,255,.28)}
+.lb .x{top:18px;right:18px}.lb .p{left:18px;top:50%;transform:translateY(-50%)}.lb .n{right:18px;top:50%;transform:translateY(-50%)}
+.lb .ct{position:absolute;bottom:20px;left:0;right:0;text-align:center;color:#c5d8f5;font:600 13px Inter,sans-serif;letter-spacing:.1em}
+@media(max-width:700px){.rvg{columns:2 140px;column-gap:12px}.rvc{padding:6px;margin-bottom:12px}.rvc .vb{font-size:10px;margin-top:7px}.lb .p,.lb .n{top:auto;bottom:18px;transform:none}}
+/* reviews - dark theme */
+.rvt div{background:var(--card);border-color:var(--bd);color:#dbe5f7}
+.rvt b{color:var(--gold2)}
+.rvc{background:var(--card);border-color:var(--bd)}
+.rvc:hover{box-shadow:0 24px 48px rgba(0,0,0,.6);border-color:rgba(59,130,246,.5)}
+.rvc img{background:#0a1634}
+.rvc .vb{color:var(--gold2)}
 </style>
 </head>
 <body>
@@ -282,6 +306,17 @@ footer .soc a.wc:hover,footer .soc a.wm:hover{background:#1f9d57}
 <script>
 const DEFAULT_WA='923005591403';
 let D={settings:{},products:[]},cat='All';
+const REVIEWS=['https://i.postimg.cc/8c6HRmHV/IMG-20261114-WA0288.jpg','https://i.postimg.cc/SKgDkss1/IMG-20261114-WA0289.jpg','https://i.postimg.cc/Cdpz8hRH/IMG-20261114-WA0294.jpg','https://i.postimg.cc/3wt4qQcz/IMG-20261114-WA0295.jpg','https://i.postimg.cc/QdrT9b7y/IMG-20261114-WA0296.jpg','https://i.postimg.cc/yxgZ9pvB/IMG-20261114-WA0297.jpg','https://i.postimg.cc/0NPD3f2y/IMG-20261114-WA0298.jpg','https://i.postimg.cc/4Nj18V9Q/IMG-20261114-WA0300.jpg','https://i.postimg.cc/fL5K5Pc9/IMG-20261114-WA0307.jpg','https://i.postimg.cc/k47sQCtj/IMG-20261114-WA0309.jpg','https://i.postimg.cc/jjHvn2CW/IMG-20261114-WA0311.jpg','https://i.postimg.cc/CL5vrwrP/IMG-20261114-WA0317.jpg','https://i.postimg.cc/XYys3QbD/IMG-20261114-WA0313.jpg','https://i.postimg.cc/rFHfv7v0/IMG-20261114-WA0315.jpg','https://i.postimg.cc/wvkWZMps/IMG-20261114-WA0321.jpg'];
+function openReview(i){closeReview();const n=REVIEWS.length;let k=i;
+ const d=document.createElement('div');d.className='lb';d.id='lb';d.setAttribute('role','dialog');d.setAttribute('aria-modal','true');
+ d.innerHTML='<button class="x" aria-label="Close">&times;</button><button class="p" aria-label="Previous">&#8249;</button><img alt="Customer review"><button class="n" aria-label="Next">&#8250;</button><div class="ct"></div>';
+ const im=d.querySelector('img'),ct=d.querySelector('.ct');
+ const show=()=>{im.src=REVIEWS[k];ct.textContent=(k+1)+' / '+n};
+ d.onclick=e=>{if(e.target===d||e.target.classList.contains('x'))closeReview();else if(e.target.classList.contains('p')){k=(k-1+n)%n;show()}else if(e.target.classList.contains('n')){k=(k+1)%n;show()}};
+ window._rvKey=e=>{if(e.key==='Escape')closeReview();else if(e.key==='ArrowLeft'){k=(k-1+n)%n;show()}else if(e.key==='ArrowRight'){k=(k+1)%n;show()}};
+ document.addEventListener('keydown',window._rvKey);document.body.appendChild(d);document.body.style.overflow='hidden';show()}
+function closeReview(){const d=document.getElementById('lb');if(d){d.remove();document.body.style.overflow='';document.removeEventListener('keydown',window._rvKey)}}
+
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const WAI='<svg viewBox="0 0 32 32"><path d="M16 3C9.400 3 4 8.300 4 14.900c0 2.300.7 4.500 1.900 6.300L4 29l8-2.100c1.200.6 2.600.9 4 .9 6.600 0 12-5.300 12-11.900S22.600 3 16 3zm5.300 14.400c-.3-.1-1.700-.8-2-.9-.3-.1-.5-.1-.7.100-.2.300-.8.900-.9 1.100-.2.200-.3.200-.6.100-1.700-.8-2.800-1.500-3.900-3.400-.3-.5.300-.5.900-1.600.1-.2 0-.4 0-.5l-.9-2.100c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.100-.8.400-.3.300-1 1-1 2.500s1.100 2.900 1.200 3.100c.1.200 2.100 3.300 5.200 4.600 1.900.8 2.700.9 3.600.7.600-.1 1.700-.7 2-1.400.2-.7.200-1.300.2-1.400-.1-.2-.3-.3-.6-.4z"/></svg>';
@@ -329,7 +364,7 @@ function site(){
  $('#root').innerHTML=`
  <nav><div class="w"><a class="logo" href="#home">${logoImg()}<span class="n">${esc(name)}</span></a>
   <button class="ham" id="ham" aria-label="Menu"><i></i><i></i><i></i></button>
-  <div class="menu" id="menu"><a class="l" href="#services">Services</a><a class="l" href="#orders">My Orders</a><a class="l" href="#about">About</a><a class="l" href="#process">Process</a><a class="l" href="#faq">FAQ</a><a class="l" href="#report">Report</a><span class="usr"><i>${esc(ME.name[0].toUpperCase())}</i>${esc(ME.name.split(" ")[0])}</span><button class="btn out sm" id="lo">Log out</button><a class="btn wa sm" target="_blank" rel="noopener" href="${chat}">${WAI}Chat on WhatsApp</a></div></div></nav>
+  <div class="menu" id="menu"><a class="l" href="#services">Services</a><a class="l" href="#orders">My Orders</a><a class="l" href="#about">About</a><a class="l" href="#process">Process</a><a class="l" href="#faq">FAQ</a><a class="l" href="#report">Report</a><a class="l" href="#reviews">Reviews</a><span class="usr"><i>${esc(ME.name[0].toUpperCase())}</i>${esc(ME.name.split(" ")[0])}</span><button class="btn out sm" id="lo">Log out</button><a class="btn wa sm" target="_blank" rel="noopener" href="${chat}">${WAI}Chat on WhatsApp</a></div></div></nav>
  <header class="hero" id="home"><div class="bg">${st.hero_image?`<img src="${esc(st.hero_image)}" alt="">`:banner()}</div><div class="ov"></div>
   <div class="w"><div class="eyebrow">Trusted Digital Services</div><h1>Premium subscriptions,<br>delivered with <em>integrity.</em></h1>
   <p>${esc(name)} provides genuine digital subscriptions and social services at honest prices, backed by fast activation and attentive support.</p>
@@ -367,12 +402,15 @@ function site(){
   <div class="f"><label for="rb">Describe the issue</label><textarea id="rb" maxlength="1500" placeholder="Please give as much detail as possible"></textarea></div>
   <button class="btn wa" type="submit" style="width:100%">${WAI}Send Report via WhatsApp</button></form>
   <div class="hist"><h3>Your recent reports</h3><p>Reports sent from this account on this device.</p><div id="hl"></div></div></div></div></section>
+ <section class="s alt" id="reviews"><div class="w"><div class="head"><div class="eyebrow">Reviews</div><h2>Trusted by our customers</h2><p>Real feedback shared by customers after their orders. Tap any review to view it in full size.</p></div>
+  <div class="rvt"><div><b>${REVIEWS.length}</b> customer reviews</div><div>Genuine screenshots</div><div>Verified orders</div></div>
+  <div class="rvg">${REVIEWS.map((u,i)=>`<button type="button" class="rvc" data-rv="${i}" aria-label="Open review ${i+1}"><img src="${u}" alt="Customer review ${i+1}" loading="lazy" decoding="async"><span class="vb"><svg viewBox="0 0 24 24"><path d="M5 12l5 5 9-10"/></svg>Verified customer</span></button>`).join('')}</div></div></section>
  <section class="band"><div class="w"><h2>Ready when you are</h2><p>Speak with our team on WhatsApp and we will help you choose the right service.</p><a class="btn gold" target="_blank" rel="noopener" href="${chat}">${WAI}Chat on WhatsApp</a></div></section>
  <footer><div class="w"><div class="g"><div><a class="logo" href="#home">${logoImg()}<span class="n" style="color:#fff">${esc(name)}</span></a><p>${esc(st.tagline||'Premium digital subscriptions and social services.')}</p><div class="fsoc"><h4>Follow us</h4><div class="soc"><a class="fb" target="_blank" rel="noopener" href="https://www.facebook.com/share/1Ju6fzmejh/?mibextid=wwXIfr" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M13.5 22v-8.2h2.8l.5-3.3h-3.3V8.4c0-.9.4-1.7 1.8-1.7h1.6V3.8s-1.4-.3-2.800-.3c-2.800 0-4.500 1.700-4.500 4.700v2.300H6.700v3.300h2.900V22z"/></svg>Facebook</a><a class="ig" target="_blank" rel="noopener" href="https://www.instagram.com/socialservice.pak?psln=MTdwd2xsYXNxYWx2NQ%3D%3D&amp;utm_source=qr" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M7.500 2h9A5.500 5.500 0 0 1 22 7.500v9a5.500 5.500 0 0 1-5.500 5.500h-9A5.500 5.500 0 0 1 2 16.500v-9A5.500 5.500 0 0 1 7.500 2zm0 2A3.500 3.500 0 0 0 4 7.500v9A3.500 3.500 0 0 0 7.500 20h9a3.500 3.500 0 0 0 3.500-3.500v-9A3.500 3.500 0 0 0 16.500 4zM12 7a5 5 0 1 1 0 10 5 5 0 0 1 0-10zm0 2a3 3 0 1 0 0 6 3 3 0 0 0 0-6zm5.300-3.400a1.200 1.200 0 1 1 0 2.400 1.200 1.200 0 0 1 0-2.400z"/></svg>Instagram</a><a class="wc" target="_blank" rel="noopener" href="https://whatsapp.com/channel/0029Vb85bta6xCSO5OKLzy3s" aria-label="WhatsApp Channel"><svg viewBox="0 0 24 24"><path d="M3 10.500v3a1.500 1.500 0 0 0 1.500 1.500H6l1 4.500h2.200L8.300 15H10l7 4V5l-7 4H4.500A1.500 1.500 0 0 0 3 10.500zm15.500-1.800v6.600a3.300 3.300 0 0 0 0-6.600zM20 5.300v1.900a6 6 0 0 1 0 9.600v1.900a8 8 0 0 0 0-13.400z"/></svg>WhatsApp Channel</a><a class="wm" target="_blank" rel="noopener" href="https://chat.whatsapp.com/DLFdQd5RKmt2gFWiCL8Od5" aria-label="WhatsApp Community"><svg viewBox="0 0 24 24"><path d="M9 11a3.500 3.500 0 1 0 0-7 3.500 3.500 0 0 0 0 7zm7 .5a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM9 13c-3 0-7 1.500-7 4.500V20h14v-2.500C16 14.500 12 13 9 13zm7.300.1c.4 0 .7-.1 1-.1 2.700 0 5.700 1.300 5.700 4v3h-5v-2.500c0-1.800-.7-3.200-1.700-4.400z"/></svg>WhatsApp Community</a></div></div></div>
-  <div><h4>Navigate</h4><a href="#services">Services</a><a href="#orders">My Orders</a><a href="#about">About</a><a href="#process">Process</a><a href="#faq">FAQ</a><a href="#report">Complaints &amp; Reports</a></div>
+  <div><h4>Navigate</h4><a href="#services">Services</a><a href="#orders">My Orders</a><a href="#about">About</a><a href="#process">Process</a><a href="#faq">FAQ</a><a href="#report">Complaints &amp; Reports</a><a href="#reviews">Reviews</a></div>
   <div><h4>Contact</h4>${st.phone?`<a href="tel:${esc(st.phone)}">${esc(st.phone)}</a>`:''}${st.email?`<a href="mailto:${esc(st.email)}">${esc(st.email)}</a>`:''}<a target="_blank" rel="noopener" href="${chat}">WhatsApp</a></div></div>
   <div class="copy"><span>&copy; ${new Date().getFullYear()} ${esc(name)}. All rights reserved.</span><span>Premium digital services</span></div></div></footer>`;
- initReport();initOrders();document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const p=D.products.find(x=>x.id===b.dataset.buy);if(p)payModal(p)});$('#lo').onclick=confirmLogout;document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{cat=b.dataset.cat;site();document.getElementById('services').scrollIntoView()});
+ initReport();initOrders();document.querySelectorAll('[data-rv]').forEach(x=>x.onclick=()=>openReview(+x.dataset.rv));document.querySelectorAll('[data-buy]').forEach(b=>b.onclick=()=>{const p=D.products.find(x=>x.id===b.dataset.buy);if(p)payModal(p)});$('#lo').onclick=confirmLogout;document.querySelectorAll('[data-cat]').forEach(b=>b.onclick=()=>{cat=b.dataset.cat;site();document.getElementById('services').scrollIntoView()});
  $('#ham').onclick=()=>$('#menu').classList.toggle('open');
  document.querySelectorAll('#menu a.l').forEach(a=>a.addEventListener('click',()=>$('#menu').classList.remove('open')));
 }
