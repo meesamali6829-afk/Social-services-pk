@@ -396,14 +396,14 @@ function authView(mode){
    if(all[email])return msg('This email is already registered. Please sign in instead.');
    const salt=rnd();all[email]={name,email,salt,hash:await hashPw(pw,salt),created:Date.now()};
    if(!LS.set('ssp_users',all)||!LS.set('ssp_session',email))return msg('Could not save your account. Please enable browser storage and try again.');
-   site();toast('Account created. Welcome, '+name.split(' ')[0]+'.','success');
+   ME=currentUser();site();window.scrollTo(0,0);toast('Account created. Welcome, '+name.split(' ')[0]+'.','success');
   }else{
    const lk=LS.get('ssp_lock',{n:0,t:0});
    if(lk.t>Date.now())return msg('Too many attempts. Please try again in '+Math.ceil((lk.t-Date.now())/1000)+' seconds.');
    const u=all[email];
    if(!u||await hashPw(pw,u.salt)!==u.hash){lk.n=(lk.n||0)+1;if(lk.n>=5){lk.n=0;lk.t=Date.now()+60000}LS.set('ssp_lock',lk);return msg('Incorrect email or password.')}
-   LS.set('ssp_lock',{n:0,t:0});LS.set('ssp_session',email);site();toast('Welcome back, '+u.name.split(' ')[0]+'.','success');
-  }}finally{const b=$('#sb');if(b)b.disabled=false}
+   LS.set('ssp_lock',{n:0,t:0});LS.set('ssp_session',email);ME=currentUser();site();window.scrollTo(0,0);toast('Welcome back, '+u.name.split(' ')[0]+'.','success');
+  }}catch(e){console.error(e);msg('Something went wrong. Please refresh the page and try again.')}finally{const b=$('#sb');if(b)b.disabled=false}
  };
 }
 function logout(){try{localStorage.removeItem('ssp_session')}catch(e){}authView('login');toast('You have been logged out.')}
